@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MenuFlow - Anti-gaspillage & découverte</title>
+<style>
+:root{--bg:#f6f7f4;--card:#fff;--text:#1d241f;--muted:#6f776f;--line:#e4e8e2;--accent:#1f7a4c;--soft:#e7f4ec;--warm:#fff6e8;--shadow:0 10px 30px rgba(30,50,38,.08);--radius:22px}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:18px;background:#183f2a;color:white;padding:18px 22px;border-radius:24px;box-shadow:var(--shadow)}
+.brand{display:flex;gap:12px;align-items:center} .logo{width:42px;height:42px;border-radius:14px;background:white;color:#183f2a;display:grid;place-items:center;font-weight:900;font-size:20px}
+.brand h1{margin:0;font-size:19px} .brand p{margin:3px 0 0;font-size:12px;opacity:.75}
+.tabs{display:flex;gap:8px;flex-wrap:wrap} .tab-btn{border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:white;border-radius:999px;padding:9px 14px;font-weight:800;cursor:pointer}
+.tab-btn.active{background:white;color:#183f2a} .tab-panel{display:none} .tab-panel.active{display:block}
+.hero{display:grid;grid-template-columns:1.35fr .75fr;gap:22px;margin:26px 0}
+.panel,.hero-card{background:var(--card);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)} .hero-card{padding:28px}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)} h2{font-size:34px;line-height:1.08;margin:10px 0 12px} h3{margin:0}
+.muted{color:var(--muted)} .controls{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px;align-items:end}
+.control{background:#f2f5f1;border-radius:16px;padding:12px 14px} .control label{display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+.control select{border:0;background:transparent;font-weight:800;color:var(--text)} .btn{border:0;border-radius:14px;padding:11px 15px;cursor:pointer;font-weight:800}
+.btn-primary{background:var(--accent);color:white} .btn-soft{background:var(--soft);color:var(--accent)} .btn-outline{background:white;color:var(--accent);border:1px solid #bddac8}
+.score{font-size:40px;font-weight:900;color:var(--accent);margin:6px 0} .bar{height:12px;background:#edf0eb;border-radius:999px;overflow:hidden;margin-top:10px} .bar>div{height:100%;background:var(--accent);width:0;transition:.25s}
+.layout{display:grid;grid-template-columns:1fr 360px;gap:22px} .meal-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px}
+.meal-card{border:1px solid var(--line);border-radius:18px;padding:14px;background:#fbfcfa} .meal-card.new{border-color:#e2b573;background:var(--warm)}
+.meal-main{display:flex;gap:12px} .emoji{width:58px;height:58px;border-radius:15px;display:grid;place-items:center;font-size:30px;background:linear-gradient(135deg,#eaf6ee,#fff4e8);flex:0 0 auto}
+.meal-card h4{margin:7px 0 5px;font-size:15px} .meal-card p{margin:0;color:var(--muted);font-size:12px}
+.badge{display:inline-flex;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900;background:#eef2ee;color:#667066} .badge-new{background:#fff0d8;color:#9a611e}
+.shared{margin-top:10px;font-size:11px;color:var(--accent);font-weight:700;line-height:1.4}
+.meal-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.meal-select{width:100%;border:1px solid var(--line);border-radius:12px;padding:9px 10px;background:white;color:var(--text);font-weight:700}
+.recipe-link{display:inline-flex;margin-top:12px;text-decoration:none;color:var(--accent);font-weight:800;font-size:12px}
+.add-recipe-box{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:18px;box-shadow:var(--shadow)}
+.add-recipe-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.add-recipe-grid .full{grid-column:1/-1}
+.add-recipe-box input,.add-recipe-box textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;color:var(--text);font:inherit}
+.add-recipe-box textarea{min-height:84px;resize:vertical}
+.form-label{display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+.form-help{font-size:11px;color:var(--muted);margin-top:6px}
+.form-status{margin-top:10px;font-size:12px;font-weight:700}
+.form-status.ok{color:var(--accent)}
+.form-status.err{color:#a84b4b}
+
+.recipe-link:hover{text-decoration:underline}
+ .empty{border:1px dashed #cfd6cf;background:#fafbf9;border-radius:18px;padding:28px;text-align:center;color:var(--muted);margin-top:16px}
+.shopping{position:sticky;top:20px;align-self:start} .category{margin-top:18px} .category h4{margin:0 0 8px;font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:.05em}
+.shop-item{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #eef0ed;font-size:13px} .shop-item span:last-child{color:var(--muted);white-space:nowrap}
+.library-head{display:flex;justify-content:space-between;gap:16px;align-items:center;margin:26px 0 16px} .library-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.library-card{background:white;border:1px solid var(--line);border-radius:18px;padding:15px;box-shadow:var(--shadow)} .library-card .visual{height:92px;border-radius:15px;display:grid;place-items:center;font-size:42px;background:linear-gradient(135deg,#eaf6ee,#fff4e8);margin-bottom:12px}
+.library-card h4{margin:0 0 6px;font-size:15px} .ingredient-mini{font-size:11px;color:var(--muted);line-height:1.45}
+.notice{margin-top:12px;padding:12px 14px;border-radius:14px;background:#f4f7f3;color:#4d594f;font-size:12px}
+@media(max-width:1000px){.layout,.hero{grid-template-columns:1fr}.shopping{position:static}.library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.app{padding:12px}.topbar{align-items:flex-start;flex-direction:column}.meal-list,.library-grid{grid-template-columns:1fr}h2{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand"><div class="logo">M</div><div><h1>MenuFlow</h1><p>Anti-gaspillage & découverte</p></div></div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="planner">🍽️ Planification</button>
+    <button class="tab-btn" data-tab="library">📚 Mes recettes</button>
+  </div>
+</header>
+
+<section id="planner" class="tab-panel active">
+  <div class="hero">
+    <div class="hero-card">
+      <div class="eyebrow">Planification automatique</div>
+      <h2>Choisis les personnes et les repas. MenuFlow fait le reste.</h2>
+      <p class="muted">La génération cherche à réutiliser au maximum les mêmes ingrédients. Tous les repas proviennent de ta bibliothèque, sauf <strong>une recette découverte</strong> qui n'y figure pas encore.</p>
+      <div class="controls">
+        <div class="control"><label>Personnes</label><select id="people"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
+        <div class="control"><label>Repas</label><select id="mealCount"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option selected>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option></select></div>
+        <button class="btn btn-primary" id="generateBtn">✨ Générer mes repas</button>
+      </div>
+      <div class="notice"><strong>Règle de génération :</strong> N−1 repas viennent de “Mes recettes” + 1 recette découverte. Si tu valides cette dernière, elle rejoint automatiquement ta bibliothèque.</div>
+    </div>
+    <div class="hero-card">
+      <div class="eyebrow">Mutualisation</div>
+      <div class="score" id="reuseScore">0%</div>
+      <div>Ingrédients réutilisés entre plusieurs repas</div>
+      <div class="bar"><div id="reuseBar"></div></div>
+      <p class="muted" id="reuseDetail" style="font-size:12px;margin-bottom:0">Génère un menu pour voir le score.</p>
+    </div>
+  </div>
+
+  <div class="layout">
+    <main class="panel">
+      <h3>Repas proposés</h3>
+      <p class="muted" style="font-size:12px;margin:5px 0 0">La sélection privilégie les recettes ayant le plus d'ingrédients en commun.</p>
+      <div id="mealList" class="meal-list"></div>
+    </main>
+    <aside class="panel shopping">
+      <h3>🛒 Liste de courses</h3>
+      <p class="muted" style="font-size:12px">Quantités pour <strong id="shoppingPeople">4 personnes</strong>.</p>
+      <div id="shoppingList"></div>
+    </aside>
+  </div>
+</section>
+
+<section id="library" class="tab-panel">
+  <div class="library-head">
+    <div><div class="eyebrow">Bibliothèque</div><h2 style="font-size:30px;margin-bottom:6px">Mes recettes</h2><p class="muted" style="margin:0">Base utilisée pour les futures générations. Chaque fiche donne aussi accès à une recette détaillée en ligne.</p></div>
+    <div class="control"><label>Recettes enregistrées</label><strong id="libraryCount">0</strong></div>
+  </div>
+  <div class="add-recipe-box">
+    <div class="eyebrow">Ajouter une recette</div>
+    <h3 style="margin-top:6px">Ajouter depuis un lien web</h3>
+    <p class="muted" style="font-size:12px;margin-bottom:0">Colle le lien de la recette, puis indique les ingrédients principaux pour que l’algorithme anti-gaspillage puisse l’utiliser correctement.</p>
+    <div class="add-recipe-grid">
+      <div class="full">
+        <label class="form-label" for="manualUrl">Lien de la recette</label>
+        <input id="manualUrl" type="url" placeholder="https://..." />
+      </div>
+      <div>
+        <label class="form-label" for="manualName">Nom de la recette</label>
+        <input id="manualName" type="text" placeholder="Ex. Poulet citron & légumes" />
+      </div>
+      <div>
+        <label class="form-label" for="manualTime">Temps (minutes)</label>
+        <input id="manualTime" type="number" min="1" max="300" value="30" />
+      </div>
+      <div class="full">
+        <label class="form-label" for="manualIngredients">Ingrédients principaux</label>
+        <textarea id="manualIngredients" placeholder="Ex. poulet, citron, pommes de terre, brocoli, ail"></textarea>
+        <div class="form-help">Sépare les ingrédients par des virgules. Ils servent au calcul de mutualisation et à la liste de courses.</div>
+      </div>
+      <div class="full">
+        <button class="btn btn-primary" id="addManualRecipeBtn">＋ Ajouter à Mes recettes</button>
+        <div id="manualRecipeStatus" class="form-status"></div>
+      </div>
+    </div>
+  </div>
+  <div id="libraryGrid" class="library-grid"></div>
+</section>
+</div>
+
+<script>
+const baseRecipes = [
+  {
+    id:"poulet-curry", name:"Poulet curry coco & riz", emoji:"🍛", time:30, tags:["rapide","familial"],
+    ingredients:[
+      ["Poulet",150,"g","Boucherie"],["Riz",90,"g","Épicerie"],["Lait de coco",100,"ml","Épicerie"],
+      ["Curry",1,"c. à café","Épicerie"],["Oignon",0.5,"pièce","Fruits & légumes"],["Épinards",50,"g","Fruits & légumes"]
+    ],
+    steps:["Émincer l’oignon et couper le poulet en morceaux.","Faire revenir l’oignon puis le poulet 6 à 8 minutes.","Ajouter le curry, le lait de coco et les épinards. Mijoter 10 minutes.","Cuire le riz séparément et servir avec le curry."]
+  },
+  {
+    id:"saumon", name:"Saumon rôti, pommes de terre & brocoli", emoji:"🐟", time:35, tags:["familial","leger"],
+    ingredients:[
+      ["Pavé de saumon",150,"g","Poissonnerie"],["Pommes de terre",220,"g","Fruits & légumes"],["Brocoli",120,"g","Fruits & légumes"],
+      ["Citron",0.25,"pièce","Fruits & légumes"],["Huile d’olive",1,"c. à soupe","Épicerie"]
+    ],
+    steps:["Préchauffer le four à 200°C.","Couper les pommes de terre et les cuire au four 20 minutes avec un filet d’huile.","Ajouter le saumon et le brocoli sur la plaque.","Cuire encore 12 à 15 minutes. Servir avec le citron."]
+  },
+  {
+    id:"pasta", name:"Pâtes crémeuses aux champignons", emoji:"🍝", time:25, tags:["rapide","vegetarien"],
+    ingredients:[
+      ["Pâtes",100,"g","Épicerie"],["Champignons",120,"g","Fruits & légumes"],["Crème",60,"ml","Crèmerie"],
+      ["Parmesan",20,"g","Crèmerie"],["Ail",0.5,"gousse","Fruits & légumes"],["Persil",5,"g","Fruits & légumes"]
+    ],
+    steps:["Cuire les pâtes al dente.","Faire revenir l’ail et les champignons 8 minutes.","Ajouter la crème et une petite louche d’eau de cuisson.","Mélanger avec les pâtes, le parmesan et le persil."]
+  },
+  {
+    id:"tacos", name:"Tacos de bœuf & crudités", emoji:"🌮", time:25, tags:["rapide","familial"],
+    ingredients:[
+      ["Bœuf haché",130,"g","Boucherie"],["Tortillas",2,"pièces","Épicerie"],["Tomate",0.5,"pièce","Fruits & légumes"],
+      ["Salade",40,"g","Fruits & légumes"],["Cheddar",25,"g","Crèmerie"],["Yaourt nature",30,"g","Crèmerie"]
+    ],
+    steps:["Faire revenir le bœuf haché avec sel, poivre et épices au choix.","Réchauffer les tortillas.","Garnir de salade, tomate, bœuf et cheddar.","Ajouter une cuillère de yaourt et servir."]
+  },
+  {
+    id:"dahl", name:"Dahl de lentilles corail", emoji:"🥣", time:30, tags:["vegetarien","leger"],
+    ingredients:[
+      ["Lentilles corail",90,"g","Épicerie"],["Tomates concassées",100,"g","Épicerie"],["Lait de coco",80,"ml","Épicerie"],
+      ["Oignon",0.5,"pièce","Fruits & légumes"],["Carotte",0.5,"pièce","Fruits & légumes"],["Cumin",1,"c. à café","Épicerie"]
+    ],
+    steps:["Rincer les lentilles.","Faire revenir l’oignon et la carotte émincés.","Ajouter cumin, lentilles, tomates et lait de coco avec un peu d’eau.","Mijoter 20 minutes en remuant régulièrement."]
+  },
+  {
+    id:"gnocchis", name:"Gnocchis tomate, mozzarella & basilic", emoji:"🍅", time:20, tags:["rapide","vegetarien","familial"],
+    ingredients:[
+      ["Gnocchis",180,"g","Épicerie"],["Coulis de tomate",120,"g","Épicerie"],["Mozzarella",60,"g","Crèmerie"],
+      ["Basilic",5,"g","Fruits & légumes"],["Courgette",0.5,"pièce","Fruits & légumes"]
+    ],
+    steps:["Poêler les gnocchis 5 minutes.","Ajouter la courgette en dés et poursuivre 5 minutes.","Verser le coulis de tomate.","Ajouter la mozzarella et le basilic juste avant de servir."]
+  },
+  {
+    id:"wok", name:"Wok de poulet, nouilles & légumes", emoji:"🥡", time:25, tags:["rapide","familial"],
+    ingredients:[
+      ["Poulet",140,"g","Boucherie"],["Nouilles",90,"g","Épicerie"],["Poivron",0.5,"pièce","Fruits & légumes"],
+      ["Carotte",0.5,"pièce","Fruits & légumes"],["Sauce soja",15,"ml","Épicerie"],["Oignon",0.25,"pièce","Fruits & légumes"]
+    ],
+    steps:["Cuire les nouilles.","Saisir le poulet en lamelles.","Ajouter oignon, carotte et poivron, puis cuire 7 minutes à feu vif.","Ajouter les nouilles et la sauce soja, mélanger 2 minutes."]
+  },
+  {
+    id:"quiche", name:"Quiche poireaux & chèvre", emoji:"🥧", time:45, tags:["vegetarien","familial"],
+    ingredients:[
+      ["Pâte brisée",0.25,"pièce","Épicerie"],["Poireau",0.5,"pièce","Fruits & légumes"],["Œuf",1,"pièce","Crèmerie"],
+      ["Crème",50,"ml","Crèmerie"],["Fromage de chèvre",35,"g","Crèmerie"],["Salade",50,"g","Fruits & légumes"]
+    ],
+    steps:["Préchauffer le four à 190°C.","Faire fondre les poireaux émincés 10 minutes.","Battre les œufs avec la crème.","Garnir la pâte de poireaux, chèvre et appareil, puis cuire 30 minutes. Servir avec la salade."]
+  },
+  {
+    id:"riz-feta", name:"Bowl riz, pois chiches & feta", emoji:"🥗", time:20, tags:["rapide","vegetarien","leger"],
+    ingredients:[
+      ["Riz",80,"g","Épicerie"],["Pois chiches",100,"g","Épicerie"],["Feta",40,"g","Crèmerie"],
+      ["Concombre",0.5,"pièce","Fruits & légumes"],["Tomate",0.5,"pièce","Fruits & légumes"],["Citron",0.25,"pièce","Fruits & légumes"]
+    ],
+    steps:["Cuire le riz et le laisser tiédir.","Rincer les pois chiches.","Couper concombre et tomate.","Assembler avec la feta et assaisonner au citron."]
+  },
+  {
+    id:"burger", name:"Burger maison & potatoes", emoji:"🍔", time:35, tags:["familial"],
+    ingredients:[
+      ["Steak haché",130,"g","Boucherie"],["Pain burger",1,"pièce","Boulangerie"],["Pommes de terre",220,"g","Fruits & légumes"],
+      ["Cheddar",25,"g","Crèmerie"],["Tomate",0.25,"pièce","Fruits & légumes"],["Salade",30,"g","Fruits & légumes"]
+    ],
+    steps:["Préchauffer le four à 210°C.","Couper les pommes de terre en quartiers et cuire 25 minutes.","Cuire les steaks selon la cuisson désirée.","Monter les burgers avec cheddar, tomate et salade."]
+  },
+  {
+    id:"couscous", name:"Couscous végétarien express", emoji:"🥕", time:30, tags:["vegetarien","familial"],
+    ingredients:[
+      ["Semoule",90,"g","Épicerie"],["Pois chiches",100,"g","Épicerie"],["Courgette",0.5,"pièce","Fruits & légumes"],
+      ["Carotte",0.5,"pièce","Fruits & légumes"],["Tomates concassées",100,"g","Épicerie"],["Ras el hanout",1,"c. à café","Épicerie"]
+    ],
+    steps:["Faire revenir les légumes en morceaux.","Ajouter tomates, pois chiches, épices et un verre d’eau.","Mijoter 15 à 20 minutes.","Préparer la semoule et servir ensemble."]
+  },
+  {
+    id:"omelette", name:"Omelette pommes de terre & salade", emoji:"🍳", time:25, tags:["rapide","vegetarien"],
+    ingredients:[
+      ["Œuf",2,"pièces","Crèmerie"],["Pommes de terre",160,"g","Fruits & légumes"],["Oignon",0.25,"pièce","Fruits & légumes"],
+      ["Salade",70,"g","Fruits & légumes"],["Fromage râpé",20,"g","Crèmerie"]
+    ],
+    steps:["Cuire les pommes de terre en petits dés à la poêle.","Ajouter l’oignon émincé.","Battre les œufs avec le fromage et verser dans la poêle.","Cuire à feu doux et servir avec la salade."]
+  }
+];
+
+let recipes = [...baseRecipes];
+
+const DEFAULT_LIBRARY_SIZE = Math.min(8, Math.max(1, recipes.length - 1));
+
+let state = JSON.parse(localStorage.getItem("menuflow-smart-state") || "null") || {
+  people:4,
+  mealCount:8,
+  savedRecipeIds:recipes.slice(0,DEFAULT_LIBRARY_SIZE).map(r=>r.id),
+  generatedMealIds:[],
+  discoveryId:null,
+  customRecipes:[]
+};
+
+if(!Array.isArray(state.savedRecipeIds) || !state.savedRecipeIds.length) state.savedRecipeIds = recipes.slice(0,DEFAULT_LIBRARY_SIZE).map(r=>r.id);
+if(!Array.isArray(state.generatedMealIds)) state.generatedMealIds = [];
+if(!state.people) state.people = 4;
+if(!state.mealCount) state.mealCount = 8;
+if(!Array.isArray(state.customRecipes)) state.customRecipes = [];
+recipes = [...baseRecipes, ...state.customRecipes];
+
+
+const peopleEl = document.getElementById("people");
+const mealCountEl = document.getElementById("mealCount");
+
+function save(){localStorage.setItem("menuflow-smart-state", JSON.stringify(state));}
+function recipeById(id){return recipes.find(r=>r.id===id);}
+function recipeSourceUrl(recipe){
+  if(recipe.sourceUrl) return recipe.sourceUrl;
+  return "https://www.marmiton.org/recettes/recherche.aspx?aqt=" + encodeURIComponent(recipe.name);
+}
+function ingredientKeys(recipe){return recipe.ingredients.map(i=>i[0].toLowerCase().trim());}
+
+function overlapScore(recipe, selectedRecipes){
+  if(!selectedRecipes.length) return 0;
+  const existing = new Set(selectedRecipes.flatMap(ingredientKeys));
+  let score=0;
+  ingredientKeys(recipe).forEach(key=>{
+    if(existing.has(key)) score += 4;
+    else {
+      const root=key.split(" ")[0];
+      if([...existing].some(x=>x.split(" ")[0]===root)) score += 1;
+    }
+  });
+  return score;
+}
+
+function pickBest(candidates, selected){
+  if(!candidates.length) return null;
+  return candidates
+    .map(recipe=>({recipe,score:overlapScore(recipe,selected)+Math.random()*0.25}))
+    .sort((a,b)=>b.score-a.score)[0].recipe;
+}
+
+
+function slugifyRecipeId(text){
+  return "custom-" + text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/^-+|-+$/g,"")
+    .slice(0,50) + "-" + Date.now();
+}
+
+function safeUrl(value){
+  try{
+    const url = new URL(value);
+    return (url.protocol === "http:" || url.protocol === "https:") ? url.toString() : "";
+  }catch(e){
+    return "";
+  }
+}
+
+function addManualRecipe(){
+  const urlEl = document.getElementById("manualUrl");
+  const nameEl = document.getElementById("manualName");
+  const timeEl = document.getElementById("manualTime");
+  const ingredientsEl = document.getElementById("manualIngredients");
+  const statusEl = document.getElementById("manualRecipeStatus");
+
+  const url = safeUrl(urlEl.value.trim());
+  const name = nameEl.value.trim();
+  const time = Math.max(1, Number(timeEl.value) || 30);
+  const ingredientNames = ingredientsEl.value
+    .split(",")
+    .map(x=>x.trim())
+    .filter(Boolean);
+
+  statusEl.className = "form-status";
+
+  if(!url){
+    statusEl.textContent = "Ajoute un lien web valide commençant par http:// ou https://.";
+    statusEl.classList.add("err");
+    return;
+  }
+  if(!name){
+    statusEl.textContent = "Indique le nom de la recette.";
+    statusEl.classList.add("err");
+    return;
+  }
+  if(!ingredientNames.length){
+    statusEl.textContent = "Ajoute au moins un ingrédient principal.";
+    statusEl.classList.add("err");
+    return;
+  }
+
+  const recipe = {
+    id: slugifyRecipeId(name),
+    name,
+    emoji:"🍽️",
+    time,
+    tags:["personnelle"],
+    sourceUrl:url,
+    ingredients:ingredientNames.map(ingredient => [ingredient,1,"portion","Autres"]),
+    steps:[]
+  };
+
+  state.customRecipes.push(recipe);
+  recipes = [...baseRecipes, ...state.customRecipes];
+
+  if(!state.savedRecipeIds.includes(recipe.id)){
+    state.savedRecipeIds.push(recipe.id);
+  }
+
+  save();
+  renderAll();
+
+  urlEl.value = "";
+  nameEl.value = "";
+  timeEl.value = "30";
+  ingredientsEl.value = "";
+
+  statusEl.textContent = "Recette ajoutée à Mes recettes.";
+  statusEl.classList.add("ok");
+}
+
+function generateMeals(){
+  const saved = state.savedRecipeIds.map(recipeById).filter(Boolean);
+  const discoveryCandidates = recipes.filter(r=>!state.savedRecipeIds.includes(r.id));
+  const chosen=[];
+  const used=new Set();
+  const savedTarget=Math.max(0,state.mealCount-1);
+
+  if(savedTarget>0 && !saved.length){
+    alert("Ta bibliothèque est vide.");
+    return;
+  }
+
+  for(let i=0;i<savedTarget;i++){
+    let pool=saved.filter(r=>!used.has(r.id));
+    if(!pool.length) pool=saved;
+    const recipe = chosen.length ? pickBest(pool,chosen) : pool[Math.floor(Math.random()*pool.length)];
+    if(!recipe) break;
+    chosen.push(recipe);
+    used.add(recipe.id);
+  }
+
+  let discovery=null;
+  if(discoveryCandidates.length) discovery=pickBest(discoveryCandidates,chosen);
+
+  if(!discovery){
+    // No unseen recipe remains: generate from library only, without falsely marking one as new.
+    let fallback=recipes.filter(r=>!used.has(r.id));
+    discovery=pickBest(fallback.length?fallback:recipes,chosen);
+  }
+
+  if(discovery && state.mealCount>=1) chosen.push(discovery);
+
+  state.generatedMealIds=chosen.slice(0,state.mealCount).map(r=>r.id);
+  state.discoveryId=(discovery && !state.savedRecipeIds.includes(discovery.id)) ? discovery.id : null;
+  save();
+  renderAll();
+}
+
+function calculateReuse(){
+  const chosen=state.generatedMealIds.map(recipeById).filter(Boolean);
+  if(chosen.length<2) return {score:0,reused:[],totalUnique:chosen.length?ingredientKeys(chosen[0]).length:0};
+  const counts={};
+  chosen.forEach(recipe=>ingredientKeys(recipe).forEach(key=>counts[key]=(counts[key]||0)+1));
+  const reused=Object.entries(counts).filter(([_,c])=>c>1).sort((a,b)=>b[1]-a[1]);
+  const totalRefs=Object.values(counts).reduce((a,b)=>a+b,0);
+  const reusedRefs=reused.reduce((sum,[_,c])=>sum+c,0);
+  return {score:totalRefs?Math.round(reusedRefs/totalRefs*100):0,reused,totalUnique:Object.keys(counts).length};
+}
+
+function formatQty(qty,unit){const rounded=Math.round(qty*10)/10;return `${rounded.toLocaleString("fr-FR")} ${unit}`;}
+function shoppingData(){
+  const grouped={};
+  state.generatedMealIds.map(recipeById).filter(Boolean).forEach(recipe=>{
+    recipe.ingredients.forEach(([name,qty,unit,category])=>{
+      const key=`${name}|${unit}`;
+      if(!grouped[category]) grouped[category]={};
+      if(!grouped[category][key]) grouped[category][key]={name,qty:0,unit};
+      grouped[category][key].qty += qty*state.people;
+    });
+  });
+  return grouped;
+}
+
+function sharedIngredientsFor(recipe){
+  const others=state.generatedMealIds.filter(id=>id!==recipe.id).map(recipeById).filter(Boolean);
+  const otherKeys=new Set(others.flatMap(ingredientKeys));
+  return ingredientKeys(recipe).filter(k=>otherKeys.has(k));
+}
+
+function renderMeals(){
+  const el=document.getElementById("mealList");
+  const chosen=state.generatedMealIds.map(recipeById).filter(Boolean);
+  const savedRecipes=state.savedRecipeIds
+    .map(recipeById)
+    .filter(Boolean)
+    .sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
+
+  if(!chosen.length){
+    el.innerHTML=`<div class="empty" style="grid-column:1/-1">Clique sur <strong>Générer mes repas</strong> pour créer un menu anti-gaspillage.</div>`;
+    return;
+  }
+
+  el.innerHTML=chosen.map((recipe,index)=>{
+    const isNew=state.discoveryId===recipe.id;
+    const shared=sharedIngredientsFor(recipe);
+
+    const librarySelector = !isNew ? `
+      <div class="meal-actions">
+        <select class="meal-select" data-replace-index="${index}">
+          ${savedRecipes.map(r=>`<option value="${r.id}" ${r.id===recipe.id?"selected":""}>${r.name}</option>`).join("")}
+        </select>
+      </div>` : "";
+
+    const discoveryActions = isNew ? `
+      <div class="meal-actions">
+        <button class="btn btn-soft" style="flex:1" data-change-discovery="1">↻ Changer la découverte</button>
+        <button class="btn btn-primary" style="flex:1" data-validate="${recipe.id}">✓ Valider et ajouter</button>
+      </div>` : "";
+
+    return `
+      <article class="meal-card ${isNew?"new":""}">
+        <div class="meal-main">
+          <div class="emoji">${recipe.emoji}</div>
+          <div>
+            <span class="badge ${isNew?"badge-new":""}">${isNew?"✨ Recette découverte":"📚 Ma bibliothèque"}</span>
+            <h4>Repas ${index+1} · ${recipe.name}</h4>
+            <p>⏱️ ${recipe.time} min</p>
+          </div>
+        </div>
+        <div class="shared">${shared.length?"♻️ Réutilisés : "+shared.slice(0,5).join(", "):"Peu d'ingrédients partagés avec les autres repas"}</div>
+        ${librarySelector}
+        ${discoveryActions}
+      </article>`;
+  }).join("");
+
+  el.querySelectorAll("[data-replace-index]").forEach(select=>{
+    select.addEventListener("change",()=>{
+      replaceKnownMeal(Number(select.dataset.replaceIndex),select.value);
+    });
+  });
+
+  el.querySelectorAll("[data-validate]").forEach(btn=>{
+    btn.addEventListener("click",()=>validateDiscovery(btn.dataset.validate));
+  });
+
+  el.querySelectorAll("[data-change-discovery]").forEach(btn=>{
+    btn.addEventListener("click",changeDiscovery);
+  });
+}
+
+
+function replaceKnownMeal(index,newId){
+  const newRecipe = recipeById(newId);
+  if(!newRecipe) return;
+
+  state.generatedMealIds[index] = newId;
+  save();
+  renderAll();
+}
+
+function changeDiscovery(){
+  const discoveryIndex = state.generatedMealIds.findIndex(id => id === state.discoveryId);
+
+  if(discoveryIndex === -1){
+    alert("Aucune recette découverte à remplacer.");
+    return;
+  }
+
+  const otherMeals = state.generatedMealIds
+    .filter((_,index) => index !== discoveryIndex)
+    .map(recipeById)
+    .filter(Boolean);
+
+  const candidates = recipes.filter(r =>
+    !state.savedRecipeIds.includes(r.id) &&
+    r.id !== state.discoveryId
+  );
+
+  if(!candidates.length){
+    alert("Il n'y a pas d'autre recette découverte disponible.");
+    return;
+  }
+
+  const next = pickBest(candidates, otherMeals);
+  if(!next) return;
+
+  state.generatedMealIds[discoveryIndex] = next.id;
+  state.discoveryId = next.id;
+
+  save();
+  renderAll();
+}
+
+function validateDiscovery(id){
+  if(!state.savedRecipeIds.includes(id)) state.savedRecipeIds.push(id);
+  state.discoveryId=null;
+  save();
+  renderAll();
+  switchTab("library");
+}
+
+function renderShopping(){
+  const el=document.getElementById("shoppingList");
+  const grouped=shoppingData();
+  const categories=Object.keys(grouped);
+  document.getElementById("shoppingPeople").textContent=`${state.people} personne${state.people>1?"s":""}`;
+  if(!categories.length){
+    el.innerHTML=`<div class="empty" style="padding:18px">La liste de courses apparaîtra après génération.</div>`;
+    return;
+  }
+  el.innerHTML=categories.map(cat=>`
+    <div class="category"><h4>${cat}</h4>
+    ${Object.values(grouped[cat]).map(i=>`<div class="shop-item"><span>☐ ${i.name}</span><span>${formatQty(i.qty,i.unit)}</span></div>`).join("")}
+    </div>`).join("");
+}
+
+function renderReuse(){
+  const r=calculateReuse();
+  document.getElementById("reuseScore").textContent=r.score+"%";
+  document.getElementById("reuseBar").style.width=r.score+"%";
+  const detail=document.getElementById("reuseDetail");
+  if(!state.generatedMealIds.length) detail.textContent="Génère un menu pour voir le score.";
+  else if(r.reused.length) detail.textContent=`${r.reused.length} ingrédients sont partagés entre plusieurs repas · ${r.totalUnique} ingrédients différents au total.`;
+  else detail.textContent="Cette génération partage peu d'ingrédients.";
+}
+
+function renderLibrary(){
+  const grid=document.getElementById("libraryGrid");
+  const saved=state.savedRecipeIds.map(recipeById).filter(Boolean);
+  document.getElementById("libraryCount").textContent=saved.length;
+
+  grid.innerHTML=saved.map(recipe=>`
+    <article class="library-card">
+      <div class="visual">${recipe.emoji}</div>
+      <h4>${recipe.name}</h4>
+      <div class="ingredient-mini">${recipe.ingredients.map(i=>i[0]).slice(0,6).join(" · ")}</div>
+      <a class="recipe-link" href="${recipeSourceUrl(recipe)}" target="_blank" rel="noopener noreferrer">${recipe.sourceUrl ? "Voir la recette source ↗" : "Voir la recette sur Marmiton ↗"}</a>
+    </article>`).join("");
+}
+
+function switchTab(id){
+  document.querySelectorAll(".tab-panel").forEach(p=>p.classList.toggle("active",p.id===id));
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));
+}
+
+function renderAll(){
+  peopleEl.value=state.people;
+  mealCountEl.value=state.mealCount;
+  renderMeals();
+  renderShopping();
+  renderReuse();
+  renderLibrary();
+}
+
+document.querySelectorAll(".tab-btn").forEach(btn=>btn.addEventListener("click",()=>switchTab(btn.dataset.tab)));
+peopleEl.addEventListener("change",e=>{state.people=Number(e.target.value);save();renderShopping();});
+mealCountEl.addEventListener("change",e=>{state.mealCount=Number(e.target.value);state.generatedMealIds=[];state.discoveryId=null;save();renderAll();});
+document.getElementById("generateBtn").addEventListener("click",generateMeals);
+document.getElementById("addManualRecipeBtn").addEventListener("click",addManualRecipe);
+
+renderAll();
+</script>
+</body>
+</html>
