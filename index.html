@@ -52,6 +52,17 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 .notice{margin-top:12px;padding:12px 14px;border-radius:14px;background:#f4f7f3;color:#4d594f;font-size:12px}
 @media(max-width:1000px){.layout,.hero{grid-template-columns:1fr}.shopping{position:static}.library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.app{padding:12px}.topbar{align-items:flex-start;flex-direction:column}.meal-list,.library-grid{grid-template-columns:1fr}h2{font-size:28px}}
+
+.auth-panel{background:#fff;border-radius:var(--radius);padding:22px;margin:26px 0;box-shadow:var(--shadow)}
+.auth-grid{display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;align-items:end;margin-top:14px}
+.auth-grid input{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;color:var(--text);font:inherit}
+.auth-status{margin-top:10px;font-size:12px;font-weight:700;color:var(--muted)}
+.auth-status.err{color:#a84b4b}.auth-status.ok{color:var(--accent)}
+.auth-user{font-size:11px;opacity:.8;align-self:center}
+.signed-out .tab-panel{display:none!important}
+.sync-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+@media(max-width:800px){.auth-grid{grid-template-columns:1fr}.auth-grid .btn{width:100%}}
+
 </style>
 </head>
 <body>
@@ -61,8 +72,29 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
   <div class="tabs">
     <button class="tab-btn active" data-tab="planner">🍽️ Planification</button>
     <button class="tab-btn" data-tab="library">📚 Mes recettes</button>
+    <span class="auth-user" id="authUser"></span>
+    <button class="tab-btn" id="signOutBtn" style="display:none">↪ Déconnexion</button>
   </div>
 </header>
+
+<section class="auth-panel" id="authPanel">
+  <div class="eyebrow">Bibliothèque partagée</div>
+  <h3 style="margin-top:6px">Connexion MenuFlow</h3>
+  <p class="muted" style="font-size:12px;margin-bottom:0">Utilise le même compte email/mot de passe sur les deux téléphones pour partager automatiquement “Mes recettes”.</p>
+  <div class="auth-grid">
+    <div>
+      <label class="form-label" for="authEmail">Email</label>
+      <input id="authEmail" type="email" autocomplete="email" placeholder="adresse@gmail.com">
+    </div>
+    <div>
+      <label class="form-label" for="authPassword">Mot de passe</label>
+      <input id="authPassword" type="password" autocomplete="current-password" placeholder="••••••••">
+    </div>
+    <button class="btn btn-primary" id="signInBtn">Se connecter</button>
+    <button class="btn btn-soft" id="signUpBtn">Créer le compte</button>
+  </div>
+  <div id="authStatus" class="auth-status">Connecte-toi pour charger la bibliothèque partagée.</div>
+</section>
 
 <section id="planner" class="tab-panel active">
   <div class="hero">
@@ -103,7 +135,10 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 <section id="library" class="tab-panel">
   <div class="library-head">
     <div><div class="eyebrow">Bibliothèque</div><h2 style="font-size:30px;margin-bottom:6px">Mes recettes</h2><p class="muted" style="margin:0">Base utilisée pour les futures générations. Chaque fiche donne aussi accès à une recette détaillée en ligne.</p></div>
-    <div class="control"><label>Recettes enregistrées</label><strong id="libraryCount">0</strong></div>
+    <div class="sync-row">
+      <button class="btn btn-soft" id="syncRecipesBtn">↻ Synchroniser</button>
+      <div class="control"><label>Recettes enregistrées</label><strong id="libraryCount">0</strong></div>
+    </div>
   </div>
   <div class="add-recipe-box">
     <div class="eyebrow">Ajouter une recette</div>
@@ -137,6 +172,7 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 </section>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const baseRecipes = [
   {
@@ -241,6 +277,15 @@ let recipes = [...baseRecipes];
 
 const DEFAULT_LIBRARY_SIZE = Math.min(8, Math.max(1, recipes.length - 1));
 
+const SUPABASE_URL = "https://zthrnsqfcwhlnyhwperr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_3CcHccz083CzhnLJ7nBLuw_QT_ckwlJ";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+let currentUser = null;
+let cloudRecipes = [];
+let recipesRealtimeChannel = null;
+
+
 let state = JSON.parse(localStorage.getItem("menuflow-smart-state") || "null") || {
   people:4,
   mealCount:8,
@@ -256,6 +301,9 @@ if(!state.people) state.people = 4;
 if(!state.mealCount) state.mealCount = 8;
 if(!Array.isArray(state.customRecipes)) state.customRecipes = [];
 recipes = [...baseRecipes, ...state.customRecipes];
+const legacyLocalRecipes = [...recipes];
+const legacySavedRecipeIds = [...state.savedRecipeIds];
+
 
 
 const peopleEl = document.getElementById("people");
@@ -291,6 +339,213 @@ function pickBest(candidates, selected){
 }
 
 
+
+function normalizeName(value){
+  return String(value || "").trim().toLocaleLowerCase("fr");
+}
+
+function rowToRecipe(row){
+  const rawIngredients = Array.isArray(row.ingredients) ? row.ingredients : [];
+  const normalizedIngredients = rawIngredients.map(item => {
+    if(Array.isArray(item)) return item;
+    return [String(item),1,"portion","Autres"];
+  });
+
+  return {
+    id: row.id,
+    name: row.name,
+    emoji:"🍽️",
+    time:Number(row.time_minutes) || 30,
+    tags:["partagée"],
+    sourceUrl:row.url || "",
+    ingredients:normalizedIngredients,
+    steps:[],
+    cloud:true
+  };
+}
+
+function rebuildSharedLibrary(){
+  recipes = [...baseRecipes, ...cloudRecipes];
+  state.savedRecipeIds = cloudRecipes.map(r => r.id);
+
+  // Remove generated ids that no longer exist.
+  state.generatedMealIds = state.generatedMealIds.filter(id => recipeById(id));
+  if(state.discoveryId && !recipeById(state.discoveryId)) state.discoveryId = null;
+
+  save();
+  renderAll();
+}
+
+async function fetchCloudRecipes(){
+  if(!currentUser) return [];
+
+  const { data, error } = await supabaseClient
+    .from("recipes")
+    .select("id,user_id,name,url,time_minutes,ingredients,created_at")
+    .order("name", { ascending:true });
+
+  if(error) throw error;
+  return (data || []).map(rowToRecipe);
+}
+
+async function seedCloudFromLegacyIfEmpty(){
+  if(!currentUser || cloudRecipes.length) return;
+
+  const localLibrary = legacySavedRecipeIds
+    .map(id => legacyLocalRecipes.find(r => r.id === id))
+    .filter(Boolean);
+
+  if(!localLibrary.length) return;
+
+  const rows = localLibrary.map(recipe => ({
+    user_id:currentUser.id,
+    name:recipe.name,
+    url:recipe.sourceUrl || recipeSourceUrl(recipe),
+    time_minutes:Number(recipe.time) || 30,
+    ingredients:recipe.ingredients || []
+  }));
+
+  const { error } = await supabaseClient.from("recipes").insert(rows);
+  if(error) throw error;
+}
+
+async function loadCloudRecipes({seedIfEmpty=true} = {}){
+  if(!currentUser) return;
+
+  try{
+    cloudRecipes = await fetchCloudRecipes();
+
+    if(seedIfEmpty && !cloudRecipes.length){
+      await seedCloudFromLegacyIfEmpty();
+      cloudRecipes = await fetchCloudRecipes();
+    }
+
+    rebuildSharedLibrary();
+    setAuthStatus("Bibliothèque synchronisée avec Supabase.", "ok");
+  }catch(error){
+    console.error(error);
+    setAuthStatus("Erreur de synchronisation : " + (error.message || error), "err");
+  }
+}
+
+async function insertRecipeInCloud(recipe){
+  if(!currentUser) throw new Error("Connecte-toi d'abord.");
+
+  const existing = cloudRecipes.find(r => normalizeName(r.name) === normalizeName(recipe.name));
+  if(existing) return existing;
+
+  const { data, error } = await supabaseClient
+    .from("recipes")
+    .insert({
+      user_id:currentUser.id,
+      name:recipe.name,
+      url:recipe.sourceUrl || recipeSourceUrl(recipe),
+      time_minutes:Number(recipe.time) || 30,
+      ingredients:recipe.ingredients || []
+    })
+    .select("id,user_id,name,url,time_minutes,ingredients,created_at")
+    .single();
+
+  if(error) throw error;
+  return rowToRecipe(data);
+}
+
+function setAuthStatus(message, kind=""){
+  const el = document.getElementById("authStatus");
+  if(!el) return;
+  el.textContent = message;
+  el.className = "auth-status" + (kind ? " " + kind : "");
+}
+
+async function signIn(){
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+  setAuthStatus("Connexion…");
+
+  const { error } = await supabaseClient.auth.signInWithPassword({email,password});
+  if(error) setAuthStatus(error.message, "err");
+}
+
+async function signUp(){
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+
+  if(!email || password.length < 6){
+    setAuthStatus("Renseigne un email valide et un mot de passe d’au moins 6 caractères.", "err");
+    return;
+  }
+
+  setAuthStatus("Création du compte…");
+  const { data, error } = await supabaseClient.auth.signUp({email,password});
+
+  if(error){
+    setAuthStatus(error.message, "err");
+    return;
+  }
+
+  if(data.session){
+    setAuthStatus("Compte créé et connecté.", "ok");
+  }else{
+    setAuthStatus("Compte créé. Vérifie l’email de confirmation envoyé par Supabase, puis connecte-toi.", "ok");
+  }
+}
+
+async function signOut(){
+  await supabaseClient.auth.signOut();
+}
+
+function stopRealtime(){
+  if(recipesRealtimeChannel){
+    supabaseClient.removeChannel(recipesRealtimeChannel);
+    recipesRealtimeChannel = null;
+  }
+}
+
+function startRealtime(){
+  stopRealtime();
+  if(!currentUser) return;
+
+  recipesRealtimeChannel = supabaseClient
+    .channel("menuflow-recipes-" + currentUser.id)
+    .on(
+      "postgres_changes",
+      {
+        event:"*",
+        schema:"public",
+        table:"recipes",
+        filter:"user_id=eq." + currentUser.id
+      },
+      () => loadCloudRecipes({seedIfEmpty:false})
+    )
+    .subscribe();
+}
+
+async function handleSession(session){
+  currentUser = session?.user || null;
+  document.body.classList.toggle("signed-out", !currentUser);
+
+  const authPanel = document.getElementById("authPanel");
+  const signOutBtn = document.getElementById("signOutBtn");
+  const authUser = document.getElementById("authUser");
+
+  if(currentUser){
+    if(authPanel) authPanel.style.display = "none";
+    if(signOutBtn) signOutBtn.style.display = "inline-flex";
+    if(authUser) authUser.textContent = currentUser.email || "";
+    setAuthStatus("Connecté.", "ok");
+    await loadCloudRecipes();
+    startRealtime();
+  }else{
+    stopRealtime();
+    cloudRecipes = [];
+    recipes = [...baseRecipes, ...state.customRecipes];
+    if(authPanel) authPanel.style.display = "block";
+    if(signOutBtn) signOutBtn.style.display = "none";
+    if(authUser) authUser.textContent = "";
+    setAuthStatus("Connecte-toi pour charger la bibliothèque partagée.");
+  }
+}
+
 function slugifyRecipeId(text){
   return "custom-" + text
     .toLowerCase()
@@ -310,7 +565,7 @@ function safeUrl(value){
   }
 }
 
-function addManualRecipe(){
+async function addManualRecipe(){
   const urlEl = document.getElementById("manualUrl");
   const nameEl = document.getElementById("manualName");
   const timeEl = document.getElementById("manualTime");
@@ -327,6 +582,11 @@ function addManualRecipe(){
 
   statusEl.className = "form-status";
 
+  if(!currentUser){
+    statusEl.textContent = "Connecte-toi d’abord à MenuFlow.";
+    statusEl.classList.add("err");
+    return;
+  }
   if(!url){
     statusEl.textContent = "Ajoute un lien web valide commençant par http:// ou https://.";
     statusEl.classList.add("err");
@@ -344,7 +604,6 @@ function addManualRecipe(){
   }
 
   const recipe = {
-    id: slugifyRecipeId(name),
     name,
     emoji:"🍽️",
     time,
@@ -354,34 +613,40 @@ function addManualRecipe(){
     steps:[]
   };
 
-  state.customRecipes.push(recipe);
-  recipes = [...baseRecipes, ...state.customRecipes];
+  try{
+    await insertRecipeInCloud(recipe);
+    await loadCloudRecipes({seedIfEmpty:false});
 
-  if(!state.savedRecipeIds.includes(recipe.id)){
-    state.savedRecipeIds.push(recipe.id);
+    urlEl.value = "";
+    nameEl.value = "";
+    timeEl.value = "30";
+    ingredientsEl.value = "";
+
+    statusEl.textContent = "Recette ajoutée et synchronisée.";
+    statusEl.classList.add("ok");
+  }catch(error){
+    console.error(error);
+    statusEl.textContent = "Impossible d’ajouter la recette : " + (error.message || error);
+    statusEl.classList.add("err");
   }
-
-  save();
-  renderAll();
-
-  urlEl.value = "";
-  nameEl.value = "";
-  timeEl.value = "30";
-  ingredientsEl.value = "";
-
-  statusEl.textContent = "Recette ajoutée à Mes recettes.";
-  statusEl.classList.add("ok");
 }
 
 function generateMeals(){
-  const saved = state.savedRecipeIds.map(recipeById).filter(Boolean);
-  const discoveryCandidates = recipes.filter(r=>!state.savedRecipeIds.includes(r.id));
+  const saved = cloudRecipes.slice().sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
+  const savedNames = new Set(saved.map(r=>normalizeName(r.name)));
+  const discoveryCandidates = baseRecipes.filter(r=>!savedNames.has(normalizeName(r.name)));
+
   const chosen=[];
   const used=new Set();
   const savedTarget=Math.max(0,state.mealCount-1);
 
+  if(!currentUser){
+    alert("Connecte-toi d’abord pour charger Mes recettes.");
+    return;
+  }
+
   if(savedTarget>0 && !saved.length){
-    alert("Ta bibliothèque est vide.");
+    alert("Ta bibliothèque partagée est vide.");
     return;
   }
 
@@ -398,15 +663,14 @@ function generateMeals(){
   if(discoveryCandidates.length) discovery=pickBest(discoveryCandidates,chosen);
 
   if(!discovery){
-    // No unseen recipe remains: generate from library only, without falsely marking one as new.
-    let fallback=recipes.filter(r=>!used.has(r.id));
-    discovery=pickBest(fallback.length?fallback:recipes,chosen);
+    const fallback = saved.filter(r=>!used.has(r.id));
+    discovery = pickBest(fallback.length ? fallback : saved, chosen);
   }
 
   if(discovery && state.mealCount>=1) chosen.push(discovery);
 
   state.generatedMealIds=chosen.slice(0,state.mealCount).map(r=>r.id);
-  state.discoveryId=(discovery && !state.savedRecipeIds.includes(discovery.id)) ? discovery.id : null;
+  state.discoveryId=(discovery && baseRecipes.some(r=>r.id===discovery.id) && !savedNames.has(normalizeName(discovery.name))) ? discovery.id : null;
   save();
   renderAll();
 }
@@ -445,9 +709,8 @@ function sharedIngredientsFor(recipe){
 function renderMeals(){
   const el=document.getElementById("mealList");
   const chosen=state.generatedMealIds.map(recipeById).filter(Boolean);
-  const savedRecipes=state.savedRecipeIds
-    .map(recipeById)
-    .filter(Boolean)
+  const savedRecipes=cloudRecipes
+    .slice()
     .sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
 
   if(!chosen.length){
@@ -526,8 +789,9 @@ function changeDiscovery(){
     .map(recipeById)
     .filter(Boolean);
 
-  const candidates = recipes.filter(r =>
-    !state.savedRecipeIds.includes(r.id) &&
+  const savedNames = new Set(cloudRecipes.map(r=>normalizeName(r.name)));
+  const candidates = baseRecipes.filter(r =>
+    !savedNames.has(normalizeName(r.name)) &&
     r.id !== state.discoveryId
   );
 
@@ -541,17 +805,28 @@ function changeDiscovery(){
 
   state.generatedMealIds[discoveryIndex] = next.id;
   state.discoveryId = next.id;
-
   save();
   renderAll();
 }
 
-function validateDiscovery(id){
-  if(!state.savedRecipeIds.includes(id)) state.savedRecipeIds.push(id);
-  state.discoveryId=null;
-  save();
-  renderAll();
-  switchTab("library");
+async function validateDiscovery(id){
+  const recipe = recipeById(id);
+  if(!recipe || !currentUser) return;
+
+  try{
+    const cloudRecipe = await insertRecipeInCloud(recipe);
+
+    state.generatedMealIds = state.generatedMealIds.map(mealId => mealId === id ? cloudRecipe.id : mealId);
+    state.discoveryId = null;
+
+    await loadCloudRecipes({seedIfEmpty:false});
+    save();
+    renderAll();
+    switchTab("library");
+  }catch(error){
+    console.error(error);
+    alert("Impossible de synchroniser cette recette : " + (error.message || error));
+  }
 }
 
 function renderShopping(){
@@ -581,8 +856,13 @@ function renderReuse(){
 
 function renderLibrary(){
   const grid=document.getElementById("libraryGrid");
-  const saved=state.savedRecipeIds.map(recipeById).filter(Boolean);
+  const saved=cloudRecipes.slice().sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
   document.getElementById("libraryCount").textContent=saved.length;
+
+  if(!currentUser){
+    grid.innerHTML=`<div class="empty" style="grid-column:1/-1">Connecte-toi pour afficher la bibliothèque partagée.</div>`;
+    return;
+  }
 
   grid.innerHTML=saved.map(recipe=>`
     <article class="library-card">
@@ -612,8 +892,29 @@ peopleEl.addEventListener("change",e=>{state.people=Number(e.target.value);save(
 mealCountEl.addEventListener("change",e=>{state.mealCount=Number(e.target.value);state.generatedMealIds=[];state.discoveryId=null;save();renderAll();});
 document.getElementById("generateBtn").addEventListener("click",generateMeals);
 document.getElementById("addManualRecipeBtn").addEventListener("click",addManualRecipe);
+document.getElementById("signInBtn").addEventListener("click",signIn);
+document.getElementById("signUpBtn").addEventListener("click",signUp);
+document.getElementById("signOutBtn").addEventListener("click",signOut);
+document.getElementById("syncRecipesBtn").addEventListener("click",()=>loadCloudRecipes({seedIfEmpty:false}));
 
+document.getElementById("authPassword").addEventListener("keydown",e=>{
+  if(e.key==="Enter") signIn();
+});
+
+window.addEventListener("focus",()=>{
+  if(currentUser) loadCloudRecipes({seedIfEmpty:false});
+});
+
+supabaseClient.auth.onAuthStateChange((event,session)=>{
+  handleSession(session);
+});
+
+document.body.classList.add("signed-out");
 renderAll();
+
+supabaseClient.auth.getSession().then(({data})=>{
+  handleSession(data.session);
+});
 </script>
 </body>
 </html>
