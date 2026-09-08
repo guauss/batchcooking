@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>MenuFlow - Anti-gaspillage & découverte</title>
+<title>PoPot</title>
 <style>
 :root{--bg:#f6f7f4;--card:#fff;--text:#1d241f;--muted:#6f776f;--line:#e4e8e2;--accent:#1f7a4c;--soft:#e7f4ec;--warm:#fff6e8;--shadow:0 10px 30px rgba(30,50,38,.08);--radius:22px}
 *{box-sizing:border-box}
@@ -72,7 +72,7 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 <body>
 <div class="app">
 <header class="topbar">
-  <div class="brand"><div class="logo">M</div><div><h1>MenuFlow</h1><p>Anti-gaspillage & découverte</p></div></div>
+  <div class="brand"><div class="logo">M</div><div><h1>PoPot</h1><p>La semaine est prête.</p></div></div>
   <div class="tabs">
     <button class="tab-btn active" data-tab="planner">🍽️ Planification</button>
     <button class="tab-btn" data-tab="library">📚 Mes recettes</button>
@@ -83,8 +83,8 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 
 <section class="auth-panel" id="authPanel">
   <div class="eyebrow">Bibliothèque partagée</div>
-  <h3 style="margin-top:6px">Connexion MenuFlow</h3>
-  <p class="muted" style="font-size:12px;margin-bottom:0">Utilise le même compte email/mot de passe sur les deux téléphones pour partager automatiquement “Mes recettes”.</p>
+  <h3 style="margin-top:6px">Connexion Popot</h3>
+  <p class="muted" style="font-size:12px;margin-bottom:0">Utilise le compte emailpour partager automatiquement “Mes recettes”.</p>
   <div class="auth-grid">
     <div>
       <label class="form-label" for="authEmail">Email</label>
@@ -104,14 +104,13 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
   <div class="hero">
     <div class="hero-card">
       <div class="eyebrow">Planification automatique</div>
-      <h2>Choisis les personnes et les repas. MenuFlow fait le reste.</h2>
+      <h2>Indique pour combien de personne et de repas. PoPot fait le reste.</h2>
       <p class="muted">La génération cherche à réutiliser au maximum les mêmes ingrédients. Tous les repas proviennent de ta bibliothèque, sauf <strong>une recette découverte</strong> qui n'y figure pas encore.</p>
       <div class="controls">
         <div class="control"><label>Personnes</label><select id="people"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
         <div class="control"><label>Repas</label><select id="mealCount"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option selected>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option></select></div>
         <button class="btn btn-primary" id="generateBtn">✨ Générer mes repas</button>
       </div>
-      <div class="notice"><strong>Règle de génération :</strong> N−1 repas viennent de “Mes recettes” + 1 recette découverte. Si tu valides cette dernière, elle rejoint automatiquement ta bibliothèque.</div>
     </div>
     <div class="hero-card">
       <div class="eyebrow">Mutualisation</div>
@@ -808,7 +807,7 @@ async function addManualRecipe(){
   statusEl.className = "form-status";
 
   if(!currentUser){
-    statusEl.textContent = "Connecte-toi d’abord à MenuFlow.";
+    statusEl.textContent = "Connecte-toi d’abord à Popot.";
     statusEl.classList.add("err");
     return;
   }
