@@ -67,6 +67,15 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 .discovery-loading{opacity:.65;pointer-events:none}
 .web-badge{background:#e8f1ff;color:#315d8a}
 
+
+.smart-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0 0 22px}
+.smart-card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.smart-card h3{font-size:16px;margin:4px 0 8px}.smart-card textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:12px;padding:10px;font:inherit;resize:vertical}
+.smart-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.pref-list{display:grid;gap:8px;margin-top:10px}.pref-item{display:flex;gap:9px;align-items:center;font-size:13px}.pref-item input{width:17px;height:17px}
+.library-tools{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.rating-row{display:flex;align-items:center;gap:4px;margin-top:10px;flex-wrap:wrap}.star-btn{border:0;background:transparent;font-size:20px;cursor:pointer;padding:0 2px;opacity:.35}.star-btn.active{opacity:1}.mini-btn{border:1px solid var(--line);background:white;border-radius:10px;padding:7px 9px;cursor:pointer;font-weight:750;font-size:11px}.mini-btn.active{background:var(--soft);color:var(--accent);border-color:#bddac8}.mini-btn.danger{color:#a84b4b}.library-card.blocked{opacity:.55}.shopping-tools{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}.shop-check{display:flex;align-items:flex-start;gap:8px;flex:1}.shop-check input{margin-top:3px}.shop-item.checked .shop-check span{text-decoration:line-through;opacity:.55}.import-row{display:flex;gap:8px;align-items:end}.import-row>div{flex:1}.leftover-hint{font-size:11px;color:var(--muted);margin-top:6px}.availability-note{font-size:11px;color:var(--accent);font-weight:700;margin-top:5px}
+@media(max-width:1000px){.smart-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.smart-grid{grid-template-columns:1fr}.import-row{align-items:stretch;flex-direction:column}}
+
 </style>
 </head>
 <body>
@@ -121,6 +130,38 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
     </div>
   </div>
 
+  <div class="smart-grid">
+    <section class="smart-card">
+      <div class="eyebrow">À la maison</div>
+      <h3>🥫 Garde-manger</h3>
+      <p class="muted" style="font-size:12px;margin:0 0 8px">Indique les ingrédients déjà disponibles. Ils seront favorisés dans les menus et retirés de la liste de courses.</p>
+      <textarea id="pantryInput" placeholder="Ex. riz, pâtes, oignons, œufs"></textarea>
+      <div class="smart-actions"><button class="btn btn-soft" id="savePantryBtn">Enregistrer</button></div>
+      <div class="availability-note" id="pantryStatus"></div>
+    </section>
+
+    <section class="smart-card">
+      <div class="eyebrow">Anti-gaspillage</div>
+      <h3>♻️ Restes à utiliser</h3>
+      <p class="muted" style="font-size:12px;margin:0 0 8px">Ces ingrédients sont encore plus prioritaires que le garde-manger pour la prochaine génération.</p>
+      <textarea id="leftoversInput" placeholder="Ex. poulet cuit, brocoli, crème"></textarea>
+      <div class="smart-actions"><button class="btn btn-soft" id="saveLeftoversBtn">Enregistrer</button><button class="btn btn-outline" id="clearLeftoversBtn">Vider</button></div>
+      <div class="leftover-hint">Tu peux aussi ajouter les ingrédients d'un repas aux restes depuis sa fiche.</div>
+    </section>
+
+    <section class="smart-card">
+      <div class="eyebrow">Préférences</div>
+      <h3>🎛️ Mes filtres</h3>
+      <div class="pref-list">
+        <label class="pref-item"><input type="checkbox" id="prefVegetarian"> Végétarien</label>
+        <label class="pref-item"><input type="checkbox" id="prefNoPork"> Sans porc</label>
+        <label class="pref-item"><input type="checkbox" id="prefNoFish"> Sans poisson</label>
+        <label class="pref-item"><input type="checkbox" id="prefQuick"> Rapide (30 min max)</label>
+        <label class="pref-item"><input type="checkbox" id="prefKids"> Plutôt adapté aux enfants</label>
+      </div>
+    </section>
+  </div>
+
   <div class="layout">
     <main class="panel">
       <h3>Repas proposés</h3>
@@ -130,6 +171,7 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
     <aside class="panel shopping">
       <h3>🛒 Liste de courses</h3>
       <p class="muted" style="font-size:12px">Quantités pour <strong id="shoppingPeople">4 personnes</strong>.</p>
+      <div class="shopping-tools"><button class="mini-btn" id="clearShoppingChecksBtn">Tout décocher</button></div>
       <div id="shoppingList"></div>
     </aside>
   </div>
@@ -148,9 +190,12 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
     <h3 style="margin-top:6px">Ajouter depuis un lien web</h3>
     <p class="muted" style="font-size:12px;margin-bottom:0">Colle le lien de la recette, puis indique les ingrédients principaux pour que l’algorithme anti-gaspillage puisse l’utiliser correctement.</p>
     <div class="add-recipe-grid">
-      <div class="full">
-        <label class="form-label" for="manualUrl">Lien de la recette</label>
-        <input id="manualUrl" type="url" placeholder="https://..." />
+      <div class="full import-row">
+        <div>
+          <label class="form-label" for="manualUrl">Lien de la recette</label>
+          <input id="manualUrl" type="url" placeholder="https://..." />
+        </div>
+        <button class="btn btn-soft" id="analyzeRecipeUrlBtn" type="button">🔎 Analyser le lien</button>
       </div>
       <div>
         <label class="form-label" for="manualName">Nom de la recette</label>
@@ -307,6 +352,29 @@ if(!Array.isArray(state.discoveryHistory)) state.discoveryHistory = [];
 if(!state.dynamicDiscoveryRecipe || typeof state.dynamicDiscoveryRecipe !== "object") state.dynamicDiscoveryRecipe = null;
 let activeDiscoveryRecipe = state.dynamicDiscoveryRecipe;
 
+
+const DEFAULT_SHARED_STATE = {
+  pantry:[],
+  leftovers:[],
+  preferences:{vegetarian:false,noPork:false,noFish:false,quick:false,kids:false},
+  feedback:{},
+  shoppingChecks:{}
+};
+
+function mergeSharedState(value){
+  const incoming = value && typeof value === "object" ? value : {};
+  return {
+    pantry:Array.isArray(incoming.pantry) ? incoming.pantry : [],
+    leftovers:Array.isArray(incoming.leftovers) ? incoming.leftovers : [],
+    preferences:{...DEFAULT_SHARED_STATE.preferences,...(incoming.preferences||{})},
+    feedback:incoming.feedback && typeof incoming.feedback === "object" ? incoming.feedback : {},
+    shoppingChecks:incoming.shoppingChecks && typeof incoming.shoppingChecks === "object" ? incoming.shoppingChecks : {}
+  };
+}
+
+state.shared = mergeSharedState(state.shared || DEFAULT_SHARED_STATE);
+let appStateRealtimeChannel = null;
+
 recipes = [...baseRecipes, ...state.customRecipes, ...(activeDiscoveryRecipe ? [activeDiscoveryRecipe] : [])];
 const legacyLocalRecipes = [...recipes];
 const legacySavedRecipeIds = [...state.savedRecipeIds];
@@ -323,6 +391,9 @@ const THEMEALDB_BASE = "https://www.themealdb.com/api/json/v1/1";
 const INGREDIENT_ALIASES = [
   [["poulet","chicken","chicken breast"],"chicken"],
   [["saumon","salmon"],"salmon"],
+  [["thon","tuna"],"tuna"],
+  [["cabillaud","cod"],"cod"],
+  [["poisson","fish"],"fish"],
   [["boeuf","bœuf","beef","steak hache","steak haché","steak"],"beef"],
   [["porc","pork"],"pork"],
   [["agneau","lamb"],"lamb"],
@@ -367,7 +438,7 @@ function apiIngredientFor(value){
   const supported = new Set([
     "chicken","salmon","beef","pork","lamb","rice","potato","tomato",
     "onion","garlic","carrot","mushroom","zucchini","broccoli","bell pepper",
-    "lentils","chickpeas","eggs","lemon","spinach","cucumber","cheese","pasta"
+    "lentils","chickpeas","eggs","lemon","spinach","cucumber","cheese","pasta","tuna","cod","fish"
   ]);
   return supported.has(canonical) ? canonical : "";
 }
@@ -431,8 +502,17 @@ function selectedApiIngredients(selectedRecipes){
   selectedRecipes.forEach(recipe => {
     recipe.ingredients.forEach(item => {
       const apiName = apiIngredientFor(item[0]);
-      if(apiName) counts.set(apiName,(counts.get(apiName)||0)+1);
+      if(apiName) counts.set(apiName,(counts.get(apiName)||0)+2);
     });
+  });
+
+  state.shared.pantry.forEach(name=>{
+    const apiName=apiIngredientFor(name);
+    if(apiName) counts.set(apiName,(counts.get(apiName)||0)+1);
+  });
+  state.shared.leftovers.forEach(name=>{
+    const apiName=apiIngredientFor(name);
+    if(apiName) counts.set(apiName,(counts.get(apiName)||0)+4);
   });
 
   return [...counts.entries()]
@@ -451,7 +531,7 @@ function webDiscoveryScore(recipe, selectedRecipes){
     if(existing.has(key)) score += 6;
   });
 
-  return score;
+  return score + householdOverlapScore(recipe) + preferenceScore(recipe);
 }
 
 async function fetchDynamicDiscovery(selectedRecipes, excludeExternalIds=[]){
@@ -498,7 +578,7 @@ async function fetchDynamicDiscovery(selectedRecipes, excludeExternalIds=[]){
       }
     }
 
-    const converted = randomMeals.map(mealDbToRecipe);
+    const converted = randomMeals.map(mealDbToRecipe).filter(recipeAllowed);
     if(!converted.length) throw new Error("Aucune nouvelle recette web disponible.");
     return converted
       .map(recipe => ({recipe,score:webDiscoveryScore(recipe,selectedRecipes)+Math.random()*0.1}))
@@ -512,7 +592,8 @@ async function fetchDynamicDiscovery(selectedRecipes, excludeExternalIds=[]){
 
   const fullRecipes = (await Promise.all(sample.map(m => lookupMealDb(m.idMeal))))
     .filter(Boolean)
-    .filter(r => !savedNames.has(normalizeName(r.name)));
+    .filter(r => !savedNames.has(normalizeName(r.name)))
+    .filter(recipeAllowed);
 
   if(!fullRecipes.length) throw new Error("Impossible de charger le détail des recettes web.");
 
@@ -552,13 +633,63 @@ function overlapScore(recipe, selectedRecipes){
   return score;
 }
 
-function pickBest(candidates, selected){
-  if(!candidates.length) return null;
-  return candidates
-    .map(recipe=>({recipe,score:overlapScore(recipe,selected)+Math.random()*0.25}))
-    .sort((a,b)=>b.score-a.score)[0].recipe;
+function feedbackFor(recipe){
+  return state.shared.feedback[String(recipe.id)] || {};
 }
 
+function ingredientSetFor(recipe){
+  return new Set((recipe.ingredients||[]).map(i=>canonicalIngredient(i[0])));
+}
+
+function recipeAllowed(recipe){
+  const pref = state.shared.preferences;
+  const fb = feedbackFor(recipe);
+  if(fb.blocked) return false;
+
+  const keys = ingredientSetFor(recipe);
+  const name = stripAccents(recipe.name || "");
+  const meatKeys = ["chicken","beef","pork","lamb","salmon","tuna","cod","fish"];
+  const fishKeys = ["salmon","tuna","cod","fish"];
+
+  if(pref.vegetarian && meatKeys.some(k=>keys.has(k))) return false;
+  if(pref.noPork && keys.has("pork")) return false;
+  if(pref.noFish && fishKeys.some(k=>keys.has(k))) return false;
+  if(pref.quick && Number(recipe.time || 999) > 30) return false;
+  if(pref.kids && /(chili|chilli|piment|spicy|tres epice|très épicé)/.test(name)) return false;
+  return true;
+}
+
+function householdOverlapScore(recipe){
+  const keys = ingredientSetFor(recipe);
+  const pantry = new Set(state.shared.pantry.map(canonicalIngredient));
+  const leftovers = new Set(state.shared.leftovers.map(canonicalIngredient));
+  let score = 0;
+  keys.forEach(k=>{
+    if(pantry.has(k)) score += 3;
+    if(leftovers.has(k)) score += 8;
+  });
+  return score;
+}
+
+function preferenceScore(recipe){
+  const fb = feedbackFor(recipe);
+  let score = 0;
+  if(Number(fb.rating)) score += Number(fb.rating) * 1.5;
+  if(fb.favorite) score += 8;
+  if(state.shared.preferences.kids && (recipe.tags||[]).includes("familial")) score += 4;
+  return score;
+}
+
+function pickBest(candidates, selected){
+  const eligible = candidates.filter(recipeAllowed);
+  if(!eligible.length) return null;
+  return eligible
+    .map(recipe=>({
+      recipe,
+      score:overlapScore(recipe,selected)+householdOverlapScore(recipe)+preferenceScore(recipe)+Math.random()*0.25
+    }))
+    .sort((a,b)=>b.score-a.score)[0].recipe;
+}
 
 
 function normalizeName(value){
@@ -598,6 +729,62 @@ function rebuildSharedLibrary(){
 
   save();
   renderAll();
+}
+
+
+async function loadSharedAppState(){
+  if(!currentUser) return;
+  const {data,error} = await supabaseClient
+    .from("app_state")
+    .select("data")
+    .eq("user_id",currentUser.id)
+    .maybeSingle();
+
+  if(error){
+    console.warn("app_state unavailable", error);
+    setAuthStatus("Recettes synchronisées. Configuration PoPot avancée non synchronisée tant que la migration app_state n'est pas installée.", "err");
+    return;
+  }
+
+  if(data && data.data){
+    state.shared = mergeSharedState(data.data);
+  }else{
+    await saveSharedAppState();
+  }
+  save();
+  renderAll();
+}
+
+async function saveSharedAppState(){
+  save();
+  if(!currentUser) return;
+  const {error} = await supabaseClient
+    .from("app_state")
+    .upsert({user_id:currentUser.id,data:state.shared,updated_at:new Date().toISOString()},{onConflict:"user_id"});
+  if(error) console.warn("Unable to sync app_state", error);
+}
+
+function startAppStateRealtime(){
+  stopAppStateRealtime();
+  if(!currentUser) return;
+  appStateRealtimeChannel = supabaseClient
+    .channel("popot-app-state-"+currentUser.id)
+    .on("postgres_changes",{event:"*",schema:"public",table:"app_state",filter:"user_id=eq."+currentUser.id},payload=>{
+      const remote = payload.new && payload.new.data;
+      if(remote){
+        state.shared = mergeSharedState(remote);
+        save();
+        renderAll();
+      }
+    })
+    .subscribe();
+}
+
+function stopAppStateRealtime(){
+  if(appStateRealtimeChannel){
+    supabaseClient.removeChannel(appStateRealtimeChannel);
+    appStateRealtimeChannel = null;
+  }
 }
 
 async function fetchCloudRecipes(){
@@ -758,9 +945,12 @@ async function handleSession(session){
     if(authUser) authUser.textContent = currentUser.email || "";
     setAuthStatus("Connecté.", "ok");
     await loadCloudRecipes();
+    await loadSharedAppState();
     startRealtime();
+    startAppStateRealtime();
   }else{
     stopRealtime();
+    stopAppStateRealtime();
     cloudRecipes = [];
     recipes = [...baseRecipes, ...state.customRecipes, ...(activeDiscoveryRecipe ? [activeDiscoveryRecipe] : [])];
     if(authPanel) authPanel.style.display = "block";
@@ -787,6 +977,107 @@ function safeUrl(value){
   }catch(e){
     return "";
   }
+}
+
+function durationToMinutes(value){
+  const text=String(value||"").trim();
+  const iso=text.match(/PT(?:(\d+)H)?(?:(\d+)M)?/i);
+  if(iso) return (Number(iso[1])||0)*60+(Number(iso[2])||0);
+  const hr=text.match(/(\d+)\s*(?:h|hour|heure)/i);
+  const mn=text.match(/(\d+)\s*(?:min|minute)/i);
+  return (hr?Number(hr[1])*60:0)+(mn?Number(mn[1]):0);
+}
+
+function findRecipeJsonLd(value){
+  if(!value) return null;
+  if(Array.isArray(value)){
+    for(const item of value){const found=findRecipeJsonLd(item);if(found)return found;}
+    return null;
+  }
+  if(typeof value!=="object") return null;
+  const type=value["@type"];
+  if(type==="Recipe" || (Array.isArray(type)&&type.includes("Recipe"))) return value;
+  if(value["@graph"]){const found=findRecipeJsonLd(value["@graph"]);if(found)return found;}
+  for(const key of Object.keys(value)){
+    if(typeof value[key]==="object"){
+      const found=findRecipeJsonLd(value[key]);if(found)return found;
+    }
+  }
+  return null;
+}
+
+function parseStructuredRecipeHtml(html){
+  const doc=new DOMParser().parseFromString(html,"text/html");
+  for(const script of doc.querySelectorAll('script[type="application/ld+json"]')){
+    try{
+      const recipe=findRecipeJsonLd(JSON.parse(script.textContent));
+      if(recipe){
+        const time=durationToMinutes(recipe.totalTime)||durationToMinutes(recipe.prepTime)+durationToMinutes(recipe.cookTime)||30;
+        return {name:recipe.name||"",time,ingredients:Array.isArray(recipe.recipeIngredient)?recipe.recipeIngredient:[]};
+      }
+    }catch(e){}
+  }
+  return null;
+}
+
+function parseReaderRecipe(text){
+  const lines=String(text||"").split(/\r?\n/);
+  let name="";
+  const titleLine=lines.find(l=>/^Title:\s*/i.test(l)) || lines.find(l=>/^#\s+/.test(l));
+  if(titleLine) name=titleLine.replace(/^Title:\s*/i,"").replace(/^#\s+/,"").trim();
+
+  let time=30;
+  for(const line of lines){
+    if(/(prep|preparation|préparation|total time|temps total|cuisson)/i.test(line)){
+      const mins=durationToMinutes(line);
+      if(mins){time=mins;break;}
+    }
+  }
+
+  const start=lines.findIndex(l=>/^#{1,4}\s*(ingredients?|ingrédients?)/i.test(l.trim()) || /^(ingredients?|ingrédients?)\s*:?$/i.test(l.trim()));
+  const ingredients=[];
+  if(start>=0){
+    for(let i=start+1;i<Math.min(lines.length,start+45);i++){
+      const line=lines[i].trim();
+      if(/^#{1,4}\s+/.test(line) && !/(ingredient|ingrédient)/i.test(line)) break;
+      const m=line.match(/^(?:[-*+]\s+|\d+[.)]\s+)(.+)$/);
+      if(m && m[1].length<180) ingredients.push(m[1].replace(/\[([^\]]+)\]\([^\)]+\)/g,"$1").trim());
+    }
+  }
+  return {name,time,ingredients};
+}
+
+async function analyzeRecipeUrl(){
+  const urlEl=document.getElementById("manualUrl");
+  const statusEl=document.getElementById("manualRecipeStatus");
+  const url=safeUrl(urlEl.value.trim());
+  if(!url){statusEl.className="form-status err";statusEl.textContent="Ajoute d'abord un lien valide.";return;}
+  statusEl.className="form-status";
+  statusEl.textContent="Analyse de la recette…";
+
+  let parsed=null;
+  try{
+    const direct=await fetch(url);
+    if(direct.ok) parsed=parseStructuredRecipeHtml(await direct.text());
+  }catch(e){}
+
+  if(!parsed || !parsed.ingredients || !parsed.ingredients.length){
+    try{
+      const reader=await fetch("https://r.jina.ai/"+url,{headers:{Accept:"text/plain"}});
+      if(!reader.ok) throw new Error("Reader HTTP "+reader.status);
+      parsed=parseReaderRecipe(await reader.text());
+    }catch(error){
+      statusEl.className="form-status err";
+      statusEl.textContent="Impossible d'analyser automatiquement ce site. Tu peux toujours remplir les champs manuellement.";
+      return;
+    }
+  }
+
+  if(parsed.name) document.getElementById("manualName").value=parsed.name;
+  if(parsed.time) document.getElementById("manualTime").value=Math.max(1,Math.min(300,parsed.time));
+  if(parsed.ingredients && parsed.ingredients.length) document.getElementById("manualIngredients").value=parsed.ingredients.slice(0,25).join(", ");
+  statusEl.className="form-status ok";
+  statusEl.textContent="Champs préremplis. Vérifie surtout les ingrédients avant d'ajouter la recette.";
 }
 
 async function addManualRecipe(){
@@ -857,6 +1148,7 @@ async function addManualRecipe(){
 
 async function generateMeals(){
   const saved = cloudRecipes.slice().sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
+  const eligibleSaved = saved.filter(recipeAllowed);
   const chosen=[];
   const used=new Set();
   const savedTarget=Math.max(0,state.mealCount-1);
@@ -866,25 +1158,28 @@ async function generateMeals(){
     return;
   }
 
-  if(savedTarget>0 && !saved.length){
-    alert("Ta bibliothèque partagée est vide.");
+  if(savedTarget>0 && !eligibleSaved.length){
+    alert("Aucune recette de ta bibliothèque ne correspond aux filtres actuels. Modifie tes préférences ou ajoute des recettes compatibles.");
     return;
   }
 
   for(let i=0;i<savedTarget;i++){
-    let pool=saved.filter(r=>!used.has(r.id));
-    if(!pool.length) pool=saved;
-    const recipe = chosen.length ? pickBest(pool,chosen) : pool[Math.floor(Math.random()*pool.length)];
+    let pool=eligibleSaved.filter(r=>!used.has(r.id));
+    if(!pool.length) pool=eligibleSaved;
+    const recipe = chosen.length ? pickBest(pool,chosen) : pickBest(pool,[]);
     if(!recipe) break;
     chosen.push(recipe);
     used.add(recipe.id);
   }
 
-  setDiscoveryLoading(true);
+  if(chosen.length < savedTarget){
+    alert("PoPot n'a pas assez de recettes compatibles avec tes filtres pour remplir tous les repas connus.");
+    return;
+  }
 
+  setDiscoveryLoading(true);
   try{
     const discovery = await fetchDynamicDiscovery(chosen);
-
     setActiveDiscovery(discovery);
 
     if(discovery.externalId){
@@ -895,19 +1190,18 @@ async function generateMeals(){
     }
 
     if(state.mealCount>=1) chosen.push(discovery);
-
     state.generatedMealIds=chosen.slice(0,state.mealCount).map(r=>r.id);
     state.discoveryId=discovery.id;
-    save();
+    state.shared.shoppingChecks={};
+    await saveSharedAppState();
     renderAll();
   }catch(error){
     console.error(error);
-    alert("Impossible de trouver une recette découverte sur le web pour le moment : " + (error.message || error));
+    alert("Impossible de trouver une recette découverte compatible sur le web pour le moment : " + (error.message || error));
   }finally{
     setDiscoveryLoading(false);
   }
 }
-
 function calculateReuse(){
   const chosen=state.generatedMealIds.map(recipeById).filter(Boolean);
   if(chosen.length<2) return {score:0,reused:[],totalUnique:chosen.length?ingredientKeys(chosen[0]).length:0};
@@ -922,11 +1216,14 @@ function calculateReuse(){
 function formatQty(qty,unit){const rounded=Math.round(qty*10)/10;return `${rounded.toLocaleString("fr-FR")} ${unit}`;}
 function shoppingData(){
   const grouped={};
+  const available=new Set([...state.shared.pantry,...state.shared.leftovers].map(canonicalIngredient));
   state.generatedMealIds.map(recipeById).filter(Boolean).forEach(recipe=>{
     recipe.ingredients.forEach(([name,qty,unit,category])=>{
-      const key=`${name}|${unit}`;
+      const canonical=canonicalIngredient(name);
+      if(available.has(canonical)) return;
+      const key=`${canonical}|${unit}`;
       if(!grouped[category]) grouped[category]={};
-      if(!grouped[category][key]) grouped[category][key]={name,qty:0,unit};
+      if(!grouped[category][key]) grouped[category][key]={name,qty:0,unit,key};
       grouped[category][key].qty += qty*state.people;
     });
   });
@@ -991,6 +1288,7 @@ function renderMeals(){
         <div class="shared">${shared.length?"♻️ Réutilisés : "+shared.slice(0,5).join(", "):"Peu d'ingrédients partagés avec les autres repas"}</div>
         ${librarySelector}
         ${discoveryActions}
+        <div class="meal-actions"><button class="mini-btn" data-leftovers-recipe="${recipe.id}">♻️ J’ai des restes</button></div>
       </article>`;
   }).join("");
 
@@ -1007,8 +1305,30 @@ function renderMeals(){
   el.querySelectorAll("[data-change-discovery]").forEach(btn=>{
     btn.addEventListener("click",changeDiscovery);
   });
+
+  el.querySelectorAll("[data-leftovers-recipe]").forEach(btn=>{
+    btn.addEventListener("click",()=>addRecipeToLeftovers(btn.dataset.leftoversRecipe));
+  });
 }
 
+
+async function addRecipeToLeftovers(id){
+  const recipe=recipeById(id);
+  if(!recipe) return;
+  const defaultList=recipe.ingredients.map(i=>i[0]).join(", ");
+  const answer=prompt("Quels ingrédients te restent après ce repas ? Supprime de la liste ceux qu'il ne reste plus.",defaultList);
+  if(answer===null) return;
+  const merged=[...state.shared.leftovers,...parseIngredientList(answer)];
+  const seen=new Set();
+  state.shared.leftovers=merged.filter(name=>{
+    const key=canonicalIngredient(name);
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  await saveSharedAppState();
+  renderAll();
+}
 
 function replaceKnownMeal(index,newId){
   const newRecipe = recipeById(newId);
@@ -1090,13 +1410,25 @@ function renderShopping(){
   const categories=Object.keys(grouped);
   document.getElementById("shoppingPeople").textContent=`${state.people} personne${state.people>1?"s":""}`;
   if(!categories.length){
-    el.innerHTML=`<div class="empty" style="padding:18px">La liste de courses apparaîtra après génération.</div>`;
+    el.innerHTML=`<div class="empty" style="padding:18px">${state.generatedMealIds.length ? "Tout est déjà dans ton garde-manger ou tes restes 🎉" : "La liste de courses apparaîtra après génération."}</div>`;
     return;
   }
   el.innerHTML=categories.map(cat=>`
     <div class="category"><h4>${cat}</h4>
-    ${Object.values(grouped[cat]).map(i=>`<div class="shop-item"><span>☐ ${i.name}</span><span>${formatQty(i.qty,i.unit)}</span></div>`).join("")}
+    ${Object.values(grouped[cat]).map(i=>{
+      const checked=!!state.shared.shoppingChecks[i.key];
+      return `<label class="shop-item ${checked?"checked":""}"><span class="shop-check"><input type="checkbox" data-shop-key="${encodeURIComponent(i.key)}" ${checked?"checked":""}><span>${i.name}</span></span><span>${formatQty(i.qty,i.unit)}</span></label>`;
+    }).join("")}
     </div>`).join("");
+
+  el.querySelectorAll("[data-shop-key]").forEach(box=>{
+    box.addEventListener("change",async()=>{
+      const key=decodeURIComponent(box.dataset.shopKey);
+      state.shared.shoppingChecks[key]=box.checked;
+      box.closest(".shop-item").classList.toggle("checked",box.checked);
+      await saveSharedAppState();
+    });
+  });
 }
 
 function renderReuse(){
@@ -1119,19 +1451,128 @@ function renderLibrary(){
     return;
   }
 
-  grid.innerHTML=saved.map(recipe=>`
-    <article class="library-card">
+  grid.innerHTML=saved.map(recipe=>{
+    const fb=feedbackFor(recipe);
+    const rating=Number(fb.rating)||0;
+    return `
+    <article class="library-card ${fb.blocked?"blocked":""}">
       <div class="visual">${recipe.emoji}</div>
       <h4>${recipe.name}</h4>
       <div class="ingredient-mini">${recipe.ingredients.map(i=>i[0]).slice(0,6).join(" · ")}</div>
+      <div class="rating-row" aria-label="Note">
+        ${[1,2,3,4,5].map(n=>`<button class="star-btn ${n<=rating?"active":""}" data-rate="${recipe.id}" data-rating="${n}" title="${n}/5">⭐</button>`).join("")}
+      </div>
+      <div class="library-tools">
+        <button class="mini-btn ${fb.favorite?"active":""}" data-favorite="${recipe.id}">${fb.favorite?"❤️ Favori":"♡ Favori"}</button>
+        <button class="mini-btn ${fb.blocked?"active":""}" data-block="${recipe.id}">${fb.blocked?"↩ Réautoriser":"👎 Ne plus proposer"}</button>
+        <button class="mini-btn" data-edit="${recipe.id}">✏️ Modifier</button>
+        <button class="mini-btn danger" data-delete="${recipe.id}">🗑 Supprimer</button>
+      </div>
       <a class="recipe-link" href="${recipeSourceUrl(recipe)}" target="_blank" rel="noopener noreferrer">${recipe.sourceUrl ? "Voir la recette source ↗" : "Voir la recette sur Marmiton ↗"}</a>
-    </article>`).join("");
+    </article>`;
+  }).join("");
+
+  grid.querySelectorAll("[data-rate]").forEach(btn=>btn.addEventListener("click",()=>rateRecipe(btn.dataset.rate,Number(btn.dataset.rating))));
+  grid.querySelectorAll("[data-favorite]").forEach(btn=>btn.addEventListener("click",()=>toggleFavorite(btn.dataset.favorite)));
+  grid.querySelectorAll("[data-block]").forEach(btn=>btn.addEventListener("click",()=>toggleBlocked(btn.dataset.block)));
+  grid.querySelectorAll("[data-edit]").forEach(btn=>btn.addEventListener("click",()=>editCloudRecipe(btn.dataset.edit)));
+  grid.querySelectorAll("[data-delete]").forEach(btn=>btn.addEventListener("click",()=>deleteCloudRecipe(btn.dataset.delete)));
+}
+
+async function rateRecipe(id,rating){
+  state.shared.feedback[id]={...feedbackFor({id}),rating};
+  await saveSharedAppState();
+  renderLibrary();
+}
+
+async function toggleFavorite(id){
+  const fb=feedbackFor({id});
+  state.shared.feedback[id]={...fb,favorite:!fb.favorite};
+  await saveSharedAppState();
+  renderLibrary();
+}
+
+async function toggleBlocked(id){
+  const fb=feedbackFor({id});
+  state.shared.feedback[id]={...fb,blocked:!fb.blocked};
+  await saveSharedAppState();
+  renderAll();
+}
+
+async function editCloudRecipe(id){
+  const recipe=cloudRecipes.find(r=>String(r.id)===String(id));
+  if(!recipe) return;
+  const name=prompt("Nom de la recette",recipe.name);
+  if(name===null || !name.trim()) return;
+  const url=prompt("Lien de la recette",recipe.sourceUrl||"");
+  if(url===null) return;
+  const timeRaw=prompt("Temps en minutes",String(recipe.time||30));
+  if(timeRaw===null) return;
+  const originalIngredients=recipe.ingredients.map(i=>i[0]).join(", ");
+  const ingredientText=prompt("Ingrédients principaux, séparés par des virgules",originalIngredients);
+  if(ingredientText===null) return;
+  const ingredientNames=ingredientText.split(",").map(x=>x.trim()).filter(Boolean);
+  const ingredients=ingredientText.trim()===originalIngredients.trim()
+    ? recipe.ingredients
+    : ingredientNames.map(x=>[x,1,"portion","Autres"]);
+
+  const {error}=await supabaseClient.from("recipes").update({
+    name:name.trim(),url:safeUrl(url.trim())||url.trim(),time_minutes:Math.max(1,Number(timeRaw)||30),ingredients
+  }).eq("id",id);
+  if(error){alert("Modification impossible : "+error.message);return;}
+  await loadCloudRecipes({seedIfEmpty:false});
+}
+
+async function deleteCloudRecipe(id){
+  const recipe=cloudRecipes.find(r=>String(r.id)===String(id));
+  if(!recipe || !confirm(`Supprimer « ${recipe.name} » de Mes recettes ?`)) return;
+  const {error}=await supabaseClient.from("recipes").delete().eq("id",id);
+  if(error){alert("Suppression impossible : "+error.message);return;}
+  delete state.shared.feedback[id];
+  state.generatedMealIds=state.generatedMealIds.filter(x=>String(x)!==String(id));
+  await saveSharedAppState();
+  await loadCloudRecipes({seedIfEmpty:false});
 }
 
 function switchTab(id){
   document.querySelectorAll(".tab-panel").forEach(p=>p.classList.toggle("active",p.id===id));
   document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));
 }
+
+function parseIngredientList(text){
+  const seen=new Set();
+  return String(text||"").split(/[,\n;]/).map(x=>x.trim()).filter(Boolean).filter(name=>{
+    const key=canonicalIngredient(name);
+    if(seen.has(key)) return false;
+    seen.add(key);return true;
+  });
+}
+
+function renderSettings(){
+  const pantry=document.getElementById("pantryInput");
+  const leftovers=document.getElementById("leftoversInput");
+  if(pantry && document.activeElement!==pantry) pantry.value=state.shared.pantry.join(", ");
+  if(leftovers && document.activeElement!==leftovers) leftovers.value=state.shared.leftovers.join(", ");
+  const p=state.shared.preferences;
+  const map={prefVegetarian:"vegetarian",prefNoPork:"noPork",prefNoFish:"noFish",prefQuick:"quick",prefKids:"kids"};
+  Object.entries(map).forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.checked=!!p[key];});
+  const status=document.getElementById("pantryStatus");
+  if(status) status.textContent=state.shared.pantry.length?`${state.shared.pantry.length} ingrédient${state.shared.pantry.length>1?"s":""} disponible${state.shared.pantry.length>1?"s":""}`:"";
+}
+
+async function savePantry(){
+  state.shared.pantry=parseIngredientList(document.getElementById("pantryInput").value);
+  state.shared.shoppingChecks={};
+  await saveSharedAppState();renderAll();
+}
+async function saveLeftovers(){
+  state.shared.leftovers=parseIngredientList(document.getElementById("leftoversInput").value);
+  state.shared.shoppingChecks={};
+  await saveSharedAppState();renderAll();
+}
+async function clearLeftovers(){state.shared.leftovers=[];await saveSharedAppState();renderAll();}
+async function clearShoppingChecks(){state.shared.shoppingChecks={};await saveSharedAppState();renderShopping();}
+async function updatePreference(key,value){state.shared.preferences[key]=value;state.generatedMealIds=[];state.discoveryId=null;setActiveDiscovery(null);await saveSharedAppState();renderAll();}
 
 function renderAll(){
   peopleEl.value=state.people;
@@ -1140,6 +1581,7 @@ function renderAll(){
   renderShopping();
   renderReuse();
   renderLibrary();
+  renderSettings();
 }
 
 document.querySelectorAll(".tab-btn").forEach(btn=>btn.addEventListener("click",()=>switchTab(btn.dataset.tab)));
@@ -1154,6 +1596,14 @@ mealCountEl.addEventListener("change",e=>{
 });
 document.getElementById("generateBtn").addEventListener("click",generateMeals);
 document.getElementById("addManualRecipeBtn").addEventListener("click",addManualRecipe);
+document.getElementById("analyzeRecipeUrlBtn").addEventListener("click",analyzeRecipeUrl);
+document.getElementById("savePantryBtn").addEventListener("click",savePantry);
+document.getElementById("saveLeftoversBtn").addEventListener("click",saveLeftovers);
+document.getElementById("clearLeftoversBtn").addEventListener("click",clearLeftovers);
+document.getElementById("clearShoppingChecksBtn").addEventListener("click",clearShoppingChecks);
+[["prefVegetarian","vegetarian"],["prefNoPork","noPork"],["prefNoFish","noFish"],["prefQuick","quick"],["prefKids","kids"]].forEach(([id,key])=>{
+  document.getElementById(id).addEventListener("change",e=>updatePreference(key,e.target.checked));
+});
 document.getElementById("signInBtn").addEventListener("click",signIn);
 document.getElementById("signUpBtn").addEventListener("click",signUp);
 document.getElementById("signOutBtn").addEventListener("click",signOut);
@@ -1164,7 +1614,7 @@ document.getElementById("authPassword").addEventListener("keydown",e=>{
 });
 
 window.addEventListener("focus",()=>{
-  if(currentUser) loadCloudRecipes({seedIfEmpty:false});
+  if(currentUser){loadCloudRecipes({seedIfEmpty:false});loadSharedAppState();}
 });
 
 supabaseClient.auth.onAuthStateChange((event,session)=>{
