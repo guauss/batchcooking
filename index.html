@@ -114,10 +114,11 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
     <div class="hero-card">
       <div class="eyebrow">Planification automatique</div>
       <h2>Indique pour combien de personne et de repas. PoPot fait le reste.</h2>
-      <p class="muted">La génération cherche à réutiliser au maximum les mêmes ingrédients. Tous les repas proviennent de ta bibliothèque, sauf <strong>une recette découverte</strong> qui n'y figure pas encore.</p>
+      <p class="muted">La génération cherche à réutiliser au maximum les mêmes ingrédients. Active <strong>Recette découverte</strong> si tu veux qu'un des repas soit recherché sur le web ; sinon tous les repas proviennent de “Mes recettes”.</p>
       <div class="controls">
         <div class="control"><label>Personnes</label><select id="people"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
         <div class="control"><label>Repas</label><select id="mealCount"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option selected>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option></select></div>
+        <label class="control discovery-option" for="prefDiscovery"><span style="display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em">Découverte</span><span style="display:flex;align-items:center;gap:8px;font-weight:800"><input type="checkbox" id="prefDiscovery"> 🌐 Recette découverte</span></label>
         <button class="btn btn-primary" id="generateBtn">✨ Générer mes repas</button>
       </div>
     </div>
@@ -171,7 +172,10 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
     <aside class="panel shopping">
       <h3>🛒 Liste de courses</h3>
       <p class="muted" style="font-size:12px">Quantités pour <strong id="shoppingPeople">4 personnes</strong>.</p>
-      <div class="shopping-tools"><button class="mini-btn" id="clearShoppingChecksBtn">Tout décocher</button></div>
+      <div class="shopping-tools">
+        <button class="mini-btn" id="shareKeepBtn">📌 Envoyer vers Google Keep</button>
+        <button class="mini-btn" id="clearShoppingChecksBtn">Tout décocher</button>
+      </div>
       <div id="shoppingList"></div>
     </aside>
   </div>
@@ -356,7 +360,7 @@ let activeDiscoveryRecipe = state.dynamicDiscoveryRecipe;
 const DEFAULT_SHARED_STATE = {
   pantry:[],
   leftovers:[],
-  preferences:{vegetarian:false,noPork:false,noFish:false,quick:false,kids:false},
+  preferences:{vegetarian:false,noPork:false,noFish:false,quick:false,kids:false,discovery:true},
   feedback:{},
   shoppingChecks:{}
 };
@@ -1151,7 +1155,8 @@ async function generateMeals(){
   const eligibleSaved = saved.filter(recipeAllowed);
   const chosen=[];
   const used=new Set();
-  const savedTarget=Math.max(0,state.mealCount-1);
+  const discoveryEnabled=state.shared.preferences.discovery !== false;
+  const savedTarget=Math.max(0,state.mealCount-(discoveryEnabled?1:0));
 
   if(!currentUser){
     alert("Connecte-toi d’abord pour charger Mes recettes.");
@@ -1173,7 +1178,19 @@ async function generateMeals(){
   }
 
   if(chosen.length < savedTarget){
-    alert("PoPot n'a pas assez de recettes compatibles avec tes filtres pour remplir tous les repas connus.");
+    alert("PoPot n'a pas assez de recettes compatibles avec tes filtres pour remplir tous les repas.");
+    return;
+  }
+
+  // Mode 100 % bibliothèque : aucun appel web, tous les repas restent modifiables via la liste déroulante.
+  if(!discoveryEnabled){
+    state.discoveryId=null;
+    setActiveDiscovery(null);
+    state.generatedMealIds=chosen.slice(0,state.mealCount).map(r=>r.id);
+    state.shared.shoppingChecks={};
+    await saveSharedAppState();
+    save();
+    renderAll();
     return;
   }
 
@@ -1194,6 +1211,7 @@ async function generateMeals(){
     state.discoveryId=discovery.id;
     state.shared.shoppingChecks={};
     await saveSharedAppState();
+    save();
     renderAll();
   }catch(error){
     console.error(error);
@@ -1286,6 +1304,7 @@ function renderMeals(){
           </div>
         </div>
         <div class="shared">${shared.length?"♻️ Réutilisés : "+shared.slice(0,5).join(", "):"Peu d'ingrédients partagés avec les autres repas"}</div>
+        <a class="recipe-link" href="${recipeSourceUrl(recipe)}" target="_blank" rel="noopener noreferrer">🔗 Ouvrir la recette ↗</a>
         ${librarySelector}
         ${discoveryActions}
         <div class="meal-actions"><button class="mini-btn" data-leftovers-recipe="${recipe.id}">♻️ J’ai des restes</button></div>
@@ -1401,6 +1420,52 @@ async function validateDiscovery(id){
   }catch(error){
     console.error(error);
     alert("Impossible de synchroniser cette recette : " + (error.message || error));
+  }
+}
+
+function shoppingListText(){
+  const grouped=shoppingData();
+  const categories=Object.keys(grouped);
+  if(!categories.length) return "";
+
+  const lines=[`🛒 Liste de courses PoPot — ${state.people} personne${state.people>1?"s":""}`,""];
+  categories.forEach(cat=>{
+    lines.push(cat.toUpperCase());
+    Object.values(grouped[cat]).forEach(item=>{
+      const checked=!!state.shared.shoppingChecks[item.key];
+      lines.push(`${checked?"☑":"☐"} ${item.name} — ${formatQty(item.qty,item.unit)}`);
+    });
+    lines.push("");
+  });
+  return lines.join("\n").trim();
+}
+
+async function shareShoppingToKeep(){
+  const text=shoppingListText();
+  if(!text){
+    alert("Génère d’abord des repas pour créer la liste de courses.");
+    return;
+  }
+
+  // Sur mobile, la feuille de partage permet de choisir Google Keep si l'app est installée.
+  if(navigator.share){
+    try{
+      await navigator.share({title:"Liste de courses PoPot",text});
+      return;
+    }catch(error){
+      if(error && error.name==="AbortError") return;
+      console.warn("Partage natif indisponible",error);
+    }
+  }
+
+  // Secours ordinateur / navigateur non compatible : copie la liste puis ouvre Keep.
+  try{
+    await navigator.clipboard.writeText(text);
+    window.open("https://keep.google.com/","_blank","noopener,noreferrer");
+    alert("La liste a été copiée. Google Keep vient de s’ouvrir : crée une note puis colle la liste.");
+  }catch(error){
+    window.open("https://keep.google.com/","_blank","noopener,noreferrer");
+    alert("Google Keep vient de s’ouvrir. Ton navigateur n’a pas autorisé la copie automatique de la liste.");
   }
 }
 
@@ -1554,7 +1619,7 @@ function renderSettings(){
   if(pantry && document.activeElement!==pantry) pantry.value=state.shared.pantry.join(", ");
   if(leftovers && document.activeElement!==leftovers) leftovers.value=state.shared.leftovers.join(", ");
   const p=state.shared.preferences;
-  const map={prefVegetarian:"vegetarian",prefNoPork:"noPork",prefNoFish:"noFish",prefQuick:"quick",prefKids:"kids"};
+  const map={prefVegetarian:"vegetarian",prefNoPork:"noPork",prefNoFish:"noFish",prefQuick:"quick",prefKids:"kids",prefDiscovery:"discovery"};
   Object.entries(map).forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.checked=!!p[key];});
   const status=document.getElementById("pantryStatus");
   if(status) status.textContent=state.shared.pantry.length?`${state.shared.pantry.length} ingrédient${state.shared.pantry.length>1?"s":""} disponible${state.shared.pantry.length>1?"s":""}`:"";
@@ -1601,7 +1666,8 @@ document.getElementById("savePantryBtn").addEventListener("click",savePantry);
 document.getElementById("saveLeftoversBtn").addEventListener("click",saveLeftovers);
 document.getElementById("clearLeftoversBtn").addEventListener("click",clearLeftovers);
 document.getElementById("clearShoppingChecksBtn").addEventListener("click",clearShoppingChecks);
-[["prefVegetarian","vegetarian"],["prefNoPork","noPork"],["prefNoFish","noFish"],["prefQuick","quick"],["prefKids","kids"]].forEach(([id,key])=>{
+document.getElementById("shareKeepBtn").addEventListener("click",shareShoppingToKeep);
+[["prefVegetarian","vegetarian"],["prefNoPork","noPork"],["prefNoFish","noFish"],["prefQuick","quick"],["prefKids","kids"],["prefDiscovery","discovery"]].forEach(([id,key])=>{
   document.getElementById(id).addEventListener("change",e=>updatePreference(key,e.target.checked));
 });
 document.getElementById("signInBtn").addEventListener("click",signIn);
