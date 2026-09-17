@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>PoPot</title>
+<!-- v5: liste unique "Ce que j’ai déjà" -->
 <style>
 :root{--bg:#f6f7f4;--card:#fff;--text:#1d241f;--muted:#6f776f;--line:#e4e8e2;--accent:#1f7a4c;--soft:#e7f4ec;--warm:#fff6e8;--shadow:0 10px 30px rgba(30,50,38,.08);--radius:22px}
 *{box-sizing:border-box}
@@ -60,6 +61,7 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 .auth-status.err{color:#a84b4b}.auth-status.ok{color:var(--accent)}
 .auth-user{font-size:11px;opacity:.8;align-self:center}
 .signed-out .tab-panel{display:none!important}
+.signed-out .tabs [data-tab],.signed-out .auth-user,.signed-out #signOutBtn{display:none!important}
 .sync-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 @media(max-width:800px){.auth-grid{grid-template-columns:1fr}.auth-grid .btn{width:100%}}
 
@@ -68,13 +70,27 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 .web-badge{background:#e8f1ff;color:#315d8a}
 
 
-.smart-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0 0 22px}
+.smart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:0 0 22px}
 .smart-card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line)}
 .smart-card h3{font-size:16px;margin:4px 0 8px}.smart-card textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:12px;padding:10px;font:inherit;resize:vertical}
 .smart-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.pref-list{display:grid;gap:8px;margin-top:10px}.pref-item{display:flex;gap:9px;align-items:center;font-size:13px}.pref-item input{width:17px;height:17px}
 .library-tools{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.rating-row{display:flex;align-items:center;gap:4px;margin-top:10px;flex-wrap:wrap}.star-btn{border:0;background:transparent;font-size:20px;cursor:pointer;padding:0 2px;opacity:.35}.star-btn.active{opacity:1}.mini-btn{border:1px solid var(--line);background:white;border-radius:10px;padding:7px 9px;cursor:pointer;font-weight:750;font-size:11px}.mini-btn.active{background:var(--soft);color:var(--accent);border-color:#bddac8}.mini-btn.danger{color:#a84b4b}.library-card.blocked{opacity:.55}.shopping-tools{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}.shop-check{display:flex;align-items:flex-start;gap:8px;flex:1}.shop-check input{margin-top:3px}.shop-item.checked .shop-check span{text-decoration:line-through;opacity:.55}.import-row{display:flex;gap:8px;align-items:end}.import-row>div{flex:1}.leftover-hint{font-size:11px;color:var(--muted);margin-top:6px}.availability-note{font-size:11px;color:var(--accent);font-weight:700;margin-top:5px}
+.available-list{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.available-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#f7f9f6;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:750}.available-chip button{border:0;background:transparent;color:inherit;cursor:pointer;padding:0;font-weight:900;line-height:1}
 @media(max-width:1000px){.smart-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.smart-grid{grid-template-columns:1fr}.import-row{align-items:stretch;flex-direction:column}}
+
+
+.leftovers-modal{position:fixed;inset:0;background:rgba(20,30,24,.48);display:none;align-items:center;justify-content:center;padding:18px;z-index:9999}
+.leftovers-modal.open{display:flex}
+.leftovers-dialog{width:min(520px,100%);max-height:86vh;overflow:auto;background:#fff;border-radius:22px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.24)}
+.leftovers-dialog h3{margin:0 0 6px}
+.leftovers-dialog .muted{margin:0 0 14px;font-size:12px}
+.leftovers-checklist{display:grid;gap:8px;margin:12px 0 16px}
+.leftovers-check{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fafbf9;cursor:pointer}
+.leftovers-check input{width:18px;height:18px;flex:0 0 auto}
+.leftovers-check span{font-weight:700;font-size:13px}
+.leftovers-modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+@media(max-width:600px){.leftovers-dialog{padding:16px}.leftovers-modal-actions .btn{flex:1}}
 
 </style>
 </head>
@@ -117,7 +133,7 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
       <p class="muted">La génération cherche à réutiliser au maximum les mêmes ingrédients. Active <strong>Recette découverte</strong> si tu veux qu'un des repas soit recherché sur le web ; sinon tous les repas proviennent de “Mes recettes”.</p>
       <div class="controls">
         <div class="control"><label>Personnes</label><select id="people"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
-        <div class="control"><label>Repas</label><select id="mealCount"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option selected>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option></select></div>
+        <div class="control"><label>Repas</label><select id="mealCount"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option></select></div>
         <label class="control discovery-option" for="prefDiscovery"><span style="display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em">Découverte</span><span style="display:flex;align-items:center;gap:8px;font-weight:800"><input type="checkbox" id="prefDiscovery"> 🌐 Recette découverte</span></label>
         <button class="btn btn-primary" id="generateBtn">✨ Générer mes repas</button>
       </div>
@@ -134,20 +150,10 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
   <div class="smart-grid">
     <section class="smart-card">
       <div class="eyebrow">À la maison</div>
-      <h3>🥫 Garde-manger</h3>
-      <p class="muted" style="font-size:12px;margin:0 0 8px">Indique les ingrédients déjà disponibles. Ils seront favorisés dans les menus et retirés de la liste de courses.</p>
+      <h3>🏠 Ce que j’ai déjà</h3>
+      <p class="muted" style="font-size:12px;margin:0 0 8px">Ajoute ici les ingrédients que tu as déjà. Tu peux aussi les ajouter depuis un repas avec « J’ai des restes ». PoPot les favorise dans les menus et les retire de la liste de courses.</p>
       <textarea id="pantryInput" placeholder="Ex. riz, pâtes, oignons, œufs"></textarea>
       <div class="smart-actions"><button class="btn btn-soft" id="savePantryBtn">Enregistrer</button></div>
-      <div class="availability-note" id="pantryStatus"></div>
-    </section>
-
-    <section class="smart-card">
-      <div class="eyebrow">Anti-gaspillage</div>
-      <h3>♻️ Restes à utiliser</h3>
-      <p class="muted" style="font-size:12px;margin:0 0 8px">Ces ingrédients sont encore plus prioritaires que le garde-manger pour la prochaine génération.</p>
-      <textarea id="leftoversInput" placeholder="Ex. poulet cuit, brocoli, crème"></textarea>
-      <div class="smart-actions"><button class="btn btn-soft" id="saveLeftoversBtn">Enregistrer</button><button class="btn btn-outline" id="clearLeftoversBtn">Vider</button></div>
-      <div class="leftover-hint">Tu peux aussi ajouter les ingrédients d'un repas aux restes depuis sa fiche.</div>
     </section>
 
     <section class="smart-card">
@@ -222,6 +228,18 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
   </div>
   <div id="libraryGrid" class="library-grid"></div>
 </section>
+</div>
+
+<div class="leftovers-modal" id="leftoversModal" aria-hidden="true">
+  <div class="leftovers-dialog" role="dialog" aria-modal="true" aria-labelledby="leftoversModalTitle">
+    <h3 id="leftoversModalTitle">♻️ J’ai des restes</h3>
+    <p class="muted">Coche les ingrédients qu’il te reste après ce repas. Seuls les ingrédients cochés seront ajoutés à « Ce que j’ai déjà ».</p>
+    <div id="leftoversChecklist" class="leftovers-checklist"></div>
+    <div class="leftovers-modal-actions">
+      <button type="button" class="btn btn-soft" id="cancelLeftoversBtn">Annuler</button>
+      <button type="button" class="btn btn-primary" id="confirmLeftoversBtn">Ajouter à « Ce que j’ai déjà »</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -340,7 +358,7 @@ let recipesRealtimeChannel = null;
 
 let state = JSON.parse(localStorage.getItem("menuflow-smart-state") || "null") || {
   people:4,
-  mealCount:8,
+  mealCount:4,
   savedRecipeIds:recipes.slice(0,DEFAULT_LIBRARY_SIZE).map(r=>r.id),
   generatedMealIds:[],
   discoveryId:null,
@@ -350,7 +368,7 @@ let state = JSON.parse(localStorage.getItem("menuflow-smart-state") || "null") |
 if(!Array.isArray(state.savedRecipeIds) || !state.savedRecipeIds.length) state.savedRecipeIds = recipes.slice(0,DEFAULT_LIBRARY_SIZE).map(r=>r.id);
 if(!Array.isArray(state.generatedMealIds)) state.generatedMealIds = [];
 if(!state.people) state.people = 4;
-if(!state.mealCount) state.mealCount = 8;
+if(!state.mealCount) state.mealCount = 4;
 if(!Array.isArray(state.customRecipes)) state.customRecipes = [];
 if(!Array.isArray(state.discoveryHistory)) state.discoveryHistory = [];
 if(!state.dynamicDiscoveryRecipe || typeof state.dynamicDiscoveryRecipe !== "object") state.dynamicDiscoveryRecipe = null;
@@ -367,9 +385,28 @@ const DEFAULT_SHARED_STATE = {
 
 function mergeSharedState(value){
   const incoming = value && typeof value === "object" ? value : {};
+  const legacyAvailable = [
+    ...(Array.isArray(incoming.pantry) ? incoming.pantry : []),
+    ...(Array.isArray(incoming.leftovers) ? incoming.leftovers : [])
+  ];
+  // Important: this migration runs before the ingredient alias table is initialized.
+  // Use a standalone key normalizer here so old pantry/leftover data cannot stop app startup.
+  const storedIngredientKey = value => String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .replace(/\s+/g, " ");
+  const seen = new Set();
+  const pantry = legacyAvailable.filter(name=>{
+    const key = storedIngredientKey(name);
+    if(!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   return {
-    pantry:Array.isArray(incoming.pantry) ? incoming.pantry : [],
-    leftovers:Array.isArray(incoming.leftovers) ? incoming.leftovers : [],
+    pantry,
+    leftovers:[],
     preferences:{...DEFAULT_SHARED_STATE.preferences,...(incoming.preferences||{})},
     feedback:incoming.feedback && typeof incoming.feedback === "object" ? incoming.feedback : {},
     shoppingChecks:incoming.shoppingChecks && typeof incoming.shoppingChecks === "object" ? incoming.shoppingChecks : {}
@@ -500,8 +537,64 @@ async function lookupMealDb(id){
   return meal ? mealDbToRecipe(meal) : null;
 }
 
+
+const FRENCH_RECIPE_SOURCES = [
+  {
+    name:"Marmiton",
+    host:"marmiton.org",
+    searchUrl:query=>"https://www.marmiton.org/recettes/recherche.aspx?aqt="+encodeURIComponent(query),
+    accept:url=>{
+      try{
+        const u=new URL(url);
+        return /(^|\.)marmiton\.org$/i.test(u.hostname) && /\/recettes\/recette_/i.test(u.pathname);
+      }catch(e){return false;}
+    }
+  },
+  {
+    name:"CuisineAZ",
+    host:"cuisineaz.com",
+    searchUrl:query=>"https://www.cuisineaz.com/recettes/recherche_v2.aspx?recherche="+encodeURIComponent(query),
+    accept:url=>{
+      try{
+        const u=new URL(url);
+        return /(^|\.)cuisineaz\.com$/i.test(u.hostname)
+          && /\/recettes\/.+\.aspx$/i.test(u.pathname)
+          && !/recherche_v2/i.test(u.pathname);
+      }catch(e){return false;}
+    }
+  },
+  {
+    name:"750g",
+    host:"750g.com",
+    searchUrl:query=>"https://www.750g.com/recherche.htm?search="+encodeURIComponent(query),
+    accept:url=>{
+      try{
+        const u=new URL(url);
+        return /(^|\.)750g\.com$/i.test(u.hostname) && /-r\d+\.htm$/i.test(u.pathname);
+      }catch(e){return false;}
+    }
+  }
+];
+
+function pantryApiIngredients(){
+  const seen = new Set();
+  return state.shared.pantry
+    .map(apiIngredientFor)
+    .filter(Boolean)
+    .filter(name=>{
+      if(seen.has(name)) return false;
+      seen.add(name);
+      return true;
+    });
+}
+
 function selectedApiIngredients(selectedRecipes){
   const counts = new Map();
+
+  state.shared.pantry.forEach(name=>{
+    const apiName=apiIngredientFor(name);
+    if(apiName) counts.set(apiName,(counts.get(apiName)||0)+10);
+  });
 
   selectedRecipes.forEach(recipe => {
     recipe.ingredients.forEach(item => {
@@ -510,18 +603,178 @@ function selectedApiIngredients(selectedRecipes){
     });
   });
 
-  state.shared.pantry.forEach(name=>{
-    const apiName=apiIngredientFor(name);
-    if(apiName) counts.set(apiName,(counts.get(apiName)||0)+1);
-  });
-  state.shared.leftovers.forEach(name=>{
-    const apiName=apiIngredientFor(name);
-    if(apiName) counts.set(apiName,(counts.get(apiName)||0)+4);
-  });
-
   return [...counts.entries()]
     .sort((a,b)=>b[1]-a[1])
     .map(([name])=>name);
+}
+
+function simpleHash(text){
+  let h=2166136261;
+  for(const ch of String(text||"")){
+    h^=ch.charCodeAt(0);
+    h=Math.imul(h,16777619);
+  }
+  return (h>>>0).toString(36);
+}
+
+function frenchDiscoveryTerms(selectedRecipes){
+  const pantry=state.shared.pantry
+    .map(v=>String(v||"").trim())
+    .filter(Boolean);
+
+  if(pantry.length) return pantry.slice(0,3);
+
+  const counts=new Map();
+  selectedRecipes.forEach(recipe=>{
+    recipe.ingredients.forEach(item=>{
+      const raw=String(item[0]||"").trim();
+      if(!raw) return;
+      const key=canonicalIngredient(raw);
+      const current=counts.get(key) || {name:raw,count:0};
+      current.count++;
+      counts.set(key,current);
+    });
+  });
+
+  return [...counts.values()]
+    .sort((a,b)=>b.count-a.count)
+    .slice(0,3)
+    .map(x=>x.name);
+}
+
+function markdownRecipeLinks(markdown,source){
+  const links=[];
+  const seen=new Set();
+  const rx=/\[([^\]]+)\]\((https?:\/\/[^)\s]+)(?:\s+"[^"]*")?\)/g;
+  let match;
+
+  while((match=rx.exec(String(markdown||"")))){
+    const title=match[1]
+      .replace(/^Image:\s*/i,"")
+      .replace(/!\[[^\]]*\]/g,"")
+      .trim();
+    const url=match[2].replace(/&amp;/g,"&");
+
+    if(!title || !source.accept(url) || seen.has(url)) continue;
+    seen.add(url);
+    links.push({title,url,source:source.name});
+  }
+
+  return links;
+}
+
+async function readWithJina(url){
+  const response=await fetch("https://r.jina.ai/"+url,{
+    headers:{
+      "Accept":"text/plain",
+      "X-Locale":"fr-FR"
+    }
+  });
+  if(!response.ok) throw new Error("Reader HTTP "+response.status);
+  return response.text();
+}
+
+async function searchFrenchRecipeLinks(source,terms){
+  if(!terms.length) return [];
+
+  const combined=terms.join(" ");
+  const attempts=[combined];
+
+  if(terms.length>1) attempts.push(terms[0]);
+
+  for(const query of attempts){
+    try{
+      const markdown=await readWithJina(source.searchUrl(query));
+      const links=markdownRecipeLinks(markdown,source);
+      if(links.length) return links.slice(0,8);
+    }catch(error){
+      console.warn("Recherche française impossible sur",source.name,error);
+    }
+  }
+
+  return [];
+}
+
+function cleanReaderIngredientLine(value){
+  return String(value||"")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g,"$1")
+    .replace(/!\[[^\]]*\]\([^)]+\)/g,"")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+function frenchRecipeFromReader(url,sourceName,markdown){
+  const parsed=parseReaderRecipe(markdown);
+  if(!parsed || !parsed.name || !parsed.ingredients || !parsed.ingredients.length) return null;
+
+  const ingredients=parsed.ingredients
+    .map(cleanReaderIngredientLine)
+    .filter(Boolean)
+    .slice(0,25)
+    .map(text=>[text,0.25,"portion","Autres"]);
+
+  if(!ingredients.length) return null;
+
+  return {
+    id:"web-fr-"+simpleHash(url),
+    externalId:"fr-"+simpleHash(url),
+    name:parsed.name
+      .replace(/\s*[-|]\s*(Marmiton|CuisineAZ|750g).*$/i,"")
+      .trim(),
+    emoji:"🇫🇷",
+    time:Number(parsed.time)||30,
+    tags:["decouverte","web","francais"],
+    sourceUrl:url,
+    sourceSite:sourceName,
+    ingredients,
+    steps:[],
+    webDiscovery:true,
+    frenchDiscovery:true
+  };
+}
+
+async function loadFrenchRecipeCandidate(link){
+  try{
+    const markdown=await readWithJina(link.url);
+    const recipe=frenchRecipeFromReader(link.url,link.source,markdown);
+    return recipe && recipeAllowed(recipe) ? recipe : null;
+  }catch(error){
+    console.warn("Lecture recette française impossible",link.url,error);
+    return null;
+  }
+}
+
+function ingredientMatchesAvailable(recipeIngredient,availableIngredient){
+  const recipeCanonical=canonicalIngredient(recipeIngredient);
+  const availableCanonical=canonicalIngredient(availableIngredient);
+  if(recipeCanonical && recipeCanonical===availableCanonical) return true;
+
+  const recipeText=stripAccents(recipeIngredient).replace(/\b\d+(?:[.,]\d+)?\s*(?:g|kg|ml|cl|l|c\.?\s*a\.?\s*s\.?|c\.?\s*a\.?\s*c\.?|cuillere[s]?|cuillerees?|piece[s]?)?\b/g," ").replace(/\s+/g," ").trim();
+  const availableText=stripAccents(availableIngredient).replace(/\s+/g," ").trim();
+
+  if(!recipeText || !availableText || availableText.length<3) return false;
+  return recipeText.includes(availableText) || availableText.includes(recipeText);
+}
+
+function pantryMatchesForRecipe(recipe){
+  const matches=[];
+  const seen=new Set();
+
+  recipe.ingredients.forEach(item=>{
+    const ingredient=String(item[0]||"");
+    for(const available of state.shared.pantry){
+      if(ingredientMatchesAvailable(ingredient,available)){
+        const key=stripAccents(available);
+        if(!seen.has(key)){
+          seen.add(key);
+          matches.push(available);
+        }
+        break;
+      }
+    }
+  });
+
+  return matches;
 }
 
 function webDiscoveryScore(recipe, selectedRecipes){
@@ -529,45 +782,107 @@ function webDiscoveryScore(recipe, selectedRecipes){
     selectedRecipes.flatMap(r => r.ingredients.map(i => canonicalIngredient(i[0])))
   );
 
-  let score = 0;
+  let selectedMealScore = 0;
   recipe.ingredients.forEach(item => {
     const key = canonicalIngredient(item[0]);
-    if(existing.has(key)) score += 6;
+    if(existing.has(key)) selectedMealScore += 5;
   });
 
-  return score + householdOverlapScore(recipe) + preferenceScore(recipe);
+  const pantryMatches = new Set(pantryMatchesForRecipe(recipe).map(stripAccents));
+  const pantryScore = pantryMatches.size * 30;
+  const frenchSourceBonus = recipe.frenchDiscovery ? 15 : 0;
+
+  return pantryScore + selectedMealScore + preferenceScore(recipe) + frenchSourceBonus;
 }
 
-async function fetchDynamicDiscovery(selectedRecipes, excludeExternalIds=[]){
+async function findFrenchDiscovery(selectedRecipes,excluded,savedNames){
+  const terms=frenchDiscoveryTerms(selectedRecipes);
+  if(!terms.length) return null;
+
+  for(const source of FRENCH_RECIPE_SOURCES){
+    const links=await searchFrenchRecipeLinks(source,terms);
+    const fresh=links.filter(link=>
+      !excluded.has("fr-"+simpleHash(link.url))
+      && !savedNames.has(normalizeName(link.title))
+    );
+
+    if(!fresh.length) continue;
+
+    // Limite volontaire pour rester raisonnable vis-à-vis des sites et de Reader.
+    const candidates=(await Promise.all(
+      fresh.slice(0,5).map(loadFrenchRecipeCandidate)
+    ))
+      .filter(Boolean)
+      .filter(recipe=>!savedNames.has(normalizeName(recipe.name)));
+
+    if(!candidates.length) continue;
+
+    return candidates
+      .map(recipe=>({
+        recipe,
+        pantryMatches:pantryMatchesForRecipe(recipe).length,
+        score:webDiscoveryScore(recipe,selectedRecipes)+Math.random()*0.1
+      }))
+      .sort((a,b)=>{
+        if(b.pantryMatches!==a.pantryMatches) return b.pantryMatches-a.pantryMatches;
+        return b.score-a.score;
+      })[0].recipe;
+  }
+
+  return null;
+}
+
+async function fetchMealDbFallback(selectedRecipes,excludeExternalIds=[]){
   const excluded = new Set([
     ...excludeExternalIds.map(String),
     ...state.discoveryHistory.map(String)
   ]);
-
   const savedNames = new Set(cloudRecipes.map(r => normalizeName(r.name)));
+  const pantryIngredients = pantryApiIngredients();
   const preferredIngredients = selectedApiIngredients(selectedRecipes);
+
   let summaries = [];
+  const summaryById = new Map();
 
-  // Use the most reused ingredient that returns candidates.
-  for(const ingredient of preferredIngredients.slice(0,5)){
-    try{
-      const payload = await mealDbJson("/filter.php?i=" + encodeURIComponent(ingredient));
-      const meals = (payload && payload.meals) || [];
-      const fresh = meals.filter(m =>
-        !excluded.has(String(m.idMeal)) &&
-        !savedNames.has(normalizeName(m.strMeal))
-      );
-
-      if(fresh.length){
-        summaries = fresh;
-        break;
+  if(pantryIngredients.length){
+    for(const ingredient of pantryIngredients.slice(0,6)){
+      try{
+        const payload = await mealDbJson("/filter.php?i=" + encodeURIComponent(ingredient));
+        const meals = (payload && payload.meals) || [];
+        meals.forEach(meal=>{
+          if(
+            !excluded.has(String(meal.idMeal)) &&
+            !savedNames.has(normalizeName(meal.strMeal))
+          ){
+            summaryById.set(String(meal.idMeal),meal);
+          }
+        });
+      }catch(error){
+        console.warn("TheMealDB pantry filter failed for", ingredient, error);
       }
-    }catch(error){
-      console.warn("TheMealDB filter failed for", ingredient, error);
+    }
+    summaries = [...summaryById.values()];
+  }
+
+  if(!summaries.length){
+    for(const ingredient of preferredIngredients.slice(0,6)){
+      try{
+        const payload = await mealDbJson("/filter.php?i=" + encodeURIComponent(ingredient));
+        const meals = (payload && payload.meals) || [];
+        const fresh = meals.filter(m =>
+          !excluded.has(String(m.idMeal)) &&
+          !savedNames.has(normalizeName(m.strMeal))
+        );
+        if(fresh.length){
+          summaries = fresh;
+          break;
+        }
+      }catch(error){
+        console.warn("TheMealDB filter failed for", ingredient, error);
+      }
     }
   }
 
-  // Fallback: ask for random web recipes when none of our ingredients maps to a useful result.
   if(!summaries.length){
     const randomMeals = [];
     for(let i=0;i<5;i++){
@@ -584,16 +899,13 @@ async function fetchDynamicDiscovery(selectedRecipes, excludeExternalIds=[]){
 
     const converted = randomMeals.map(mealDbToRecipe).filter(recipeAllowed);
     if(!converted.length) throw new Error("Aucune nouvelle recette web disponible.");
+
     return converted
       .map(recipe => ({recipe,score:webDiscoveryScore(recipe,selectedRecipes)+Math.random()*0.1}))
       .sort((a,b)=>b.score-a.score)[0].recipe;
   }
 
-  // Inspect several full recipes and keep the one sharing the most ingredients.
-  const sample = [...summaries]
-    .sort(()=>Math.random()-0.5)
-    .slice(0,8);
-
+  const sample = [...summaries].sort(()=>Math.random()-0.5).slice(0,8);
   const fullRecipes = (await Promise.all(sample.map(m => lookupMealDb(m.idMeal))))
     .filter(Boolean)
     .filter(r => !savedNames.has(normalizeName(r.name)))
@@ -602,8 +914,34 @@ async function fetchDynamicDiscovery(selectedRecipes, excludeExternalIds=[]){
   if(!fullRecipes.length) throw new Error("Impossible de charger le détail des recettes web.");
 
   return fullRecipes
-    .map(recipe => ({recipe,score:webDiscoveryScore(recipe,selectedRecipes)+Math.random()*0.1}))
-    .sort((a,b)=>b.score-a.score)[0].recipe;
+    .map(recipe => ({
+      recipe,
+      pantryMatches:pantryMatchesForRecipe(recipe).length,
+      score:webDiscoveryScore(recipe,selectedRecipes)+Math.random()*0.1
+    }))
+    .sort((a,b)=>{
+      if(b.pantryMatches !== a.pantryMatches) return b.pantryMatches-a.pantryMatches;
+      return b.score-a.score;
+    })[0].recipe;
+}
+
+async function fetchDynamicDiscovery(selectedRecipes, excludeExternalIds=[]){
+  const excluded = new Set([
+    ...excludeExternalIds.map(String),
+    ...state.discoveryHistory.map(String)
+  ]);
+  const savedNames = new Set(cloudRecipes.map(r => normalizeName(r.name)));
+
+  // 1) Priorité aux sites de recettes français et aux mots saisis en français.
+  try{
+    const frenchRecipe=await findFrenchDiscovery(selectedRecipes,excluded,savedNames);
+    if(frenchRecipe) return frenchRecipe;
+  }catch(error){
+    console.warn("Découverte française indisponible, passage au secours TheMealDB.",error);
+  }
+
+  // 2) Secours uniquement si aucun résultat français exploitable.
+  return fetchMealDbFallback(selectedRecipes,excludeExternalIds);
 }
 
 function setDiscoveryLoading(isLoading){
@@ -612,7 +950,7 @@ function setDiscoveryLoading(isLoading){
   if(list) list.classList.toggle("discovery-loading", !!isLoading);
   if(generate){
     generate.disabled = !!isLoading;
-    generate.textContent = isLoading ? "🌐 Recherche d’une recette…" : "✨ Générer mes repas";
+    generate.textContent = isLoading ? "🇫🇷 Recherche d’une recette…" : "✨ Générer mes repas";
   }
 }
 
@@ -665,12 +1003,10 @@ function recipeAllowed(recipe){
 
 function householdOverlapScore(recipe){
   const keys = ingredientSetFor(recipe);
-  const pantry = new Set(state.shared.pantry.map(canonicalIngredient));
-  const leftovers = new Set(state.shared.leftovers.map(canonicalIngredient));
+  const available = new Set(state.shared.pantry.map(canonicalIngredient));
   let score = 0;
   keys.forEach(k=>{
-    if(pantry.has(k)) score += 3;
-    if(leftovers.has(k)) score += 8;
+    if(available.has(k)) score += 3;
   });
   return score;
 }
@@ -751,7 +1087,9 @@ async function loadSharedAppState(){
   }
 
   if(data && data.data){
+    const hadLegacyLeftovers = Array.isArray(data.data.leftovers) && data.data.leftovers.length > 0;
     state.shared = mergeSharedState(data.data);
+    if(hadLegacyLeftovers) await saveSharedAppState();
   }else{
     await saveSharedAppState();
   }
@@ -981,6 +1319,15 @@ function safeUrl(value){
   }catch(e){
     return "";
   }
+}
+
+function escapeHtml(value){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 }
 
 function durationToMinutes(value){
@@ -1234,7 +1581,7 @@ function calculateReuse(){
 function formatQty(qty,unit){const rounded=Math.round(qty*10)/10;return `${rounded.toLocaleString("fr-FR")} ${unit}`;}
 function shoppingData(){
   const grouped={};
-  const available=new Set([...state.shared.pantry,...state.shared.leftovers].map(canonicalIngredient));
+  const available=new Set(state.shared.pantry.map(canonicalIngredient));
   state.generatedMealIds.map(recipeById).filter(Boolean).forEach(recipe=>{
     recipe.ingredients.forEach(([name,qty,unit,category])=>{
       const canonical=canonicalIngredient(name);
@@ -1279,6 +1626,7 @@ function renderMeals(){
   el.innerHTML=chosen.map((recipe,index)=>{
     const isNew=state.discoveryId===recipe.id;
     const shared=sharedIngredientsFor(recipe);
+    const pantryMatches=isNew ? [...new Set(pantryMatchesForRecipe(recipe))] : [];
 
     const librarySelector = !isNew ? `
       <div class="meal-actions">
@@ -1298,12 +1646,13 @@ function renderMeals(){
         <div class="meal-main">
           <div class="emoji">${recipe.emoji}</div>
           <div>
-            <span class="badge ${isNew?"badge-new web-badge":""}">${isNew?"🌐 Découverte web":"📚 Ma bibliothèque"}</span>
+            <span class="badge ${isNew?"badge-new web-badge":""}">${isNew?(recipe.sourceSite?"🇫🇷 Découverte · "+recipe.sourceSite:"🌐 Découverte web"):"📚 Ma bibliothèque"}</span>
             <h4>Repas ${index+1} · ${recipe.name}</h4>
             <p>⏱️ ${recipe.time} min</p>
           </div>
         </div>
-        <div class="shared">${shared.length?"♻️ Réutilisés : "+shared.slice(0,5).join(", "):"Peu d'ingrédients partagés avec les autres repas"}</div>
+        ${isNew && pantryMatches.length ? `<div class="shared">🏠 Déjà chez toi : ${pantryMatches.slice(0,6).join(", ")}</div>` : ""}
+        <div class="shared">${shared.length?"♻️ Mutualisés avec les autres repas : "+shared.slice(0,5).join(", "):"Peu d'ingrédients partagés avec les autres repas"}</div>
         <a class="recipe-link" href="${recipeSourceUrl(recipe)}" target="_blank" rel="noopener noreferrer">🔗 Ouvrir la recette ↗</a>
         ${librarySelector}
         ${discoveryActions}
@@ -1331,21 +1680,75 @@ function renderMeals(){
 }
 
 
-async function addRecipeToLeftovers(id){
+let leftoversRecipePendingId = null;
+
+function closeLeftoversModal(){
+  leftoversRecipePendingId = null;
+  const modal=document.getElementById("leftoversModal");
+  if(modal){
+    modal.classList.remove("open");
+    modal.setAttribute("aria-hidden","true");
+  }
+}
+
+function addRecipeToLeftovers(id){
   const recipe=recipeById(id);
   if(!recipe) return;
-  const defaultList=recipe.ingredients.map(i=>i[0]).join(", ");
-  const answer=prompt("Quels ingrédients te restent après ce repas ? Supprime de la liste ceux qu'il ne reste plus.",defaultList);
-  if(answer===null) return;
-  const merged=[...state.shared.leftovers,...parseIngredientList(answer)];
+
+  leftoversRecipePendingId=id;
+
+  const checklist=document.getElementById("leftoversChecklist");
+  const modal=document.getElementById("leftoversModal");
+  if(!checklist || !modal) return;
+
+  const unique=[];
   const seen=new Set();
-  state.shared.leftovers=merged.filter(name=>{
+  recipe.ingredients.forEach(item=>{
+    const name=String(item[0]||"").trim();
     const key=canonicalIngredient(name);
-    if(seen.has(key)) return false;
+    if(!name || !key || seen.has(key)) return;
+    seen.add(key);
+    unique.push(name);
+  });
+
+  checklist.innerHTML=unique.map((name,index)=>`
+    <label class="leftovers-check">
+      <input type="checkbox" value="${escapeHtml(name)}" data-leftover-index="${index}">
+      <span>${escapeHtml(name)}</span>
+    </label>
+  `).join("");
+
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+}
+
+async function confirmLeftoversSelection(){
+  if(!leftoversRecipePendingId) return;
+
+  const checked=[...document.querySelectorAll("#leftoversChecklist input[type='checkbox']:checked")]
+    .map(input=>input.value)
+    .filter(Boolean);
+
+  if(!checked.length){
+    closeLeftoversModal();
+    return;
+  }
+
+  const merged=[...state.shared.pantry,...checked];
+  const seen=new Set();
+
+  state.shared.pantry=merged.filter(name=>{
+    const key=canonicalIngredient(name);
+    if(!key || seen.has(key)) return false;
     seen.add(key);
     return true;
   });
+
+  state.shared.leftovers=[];
+  state.shared.shoppingChecks={};
+
   await saveSharedAppState();
+  closeLeftoversModal();
   renderAll();
 }
 
@@ -1475,7 +1878,7 @@ function renderShopping(){
   const categories=Object.keys(grouped);
   document.getElementById("shoppingPeople").textContent=`${state.people} personne${state.people>1?"s":""}`;
   if(!categories.length){
-    el.innerHTML=`<div class="empty" style="padding:18px">${state.generatedMealIds.length ? "Tout est déjà dans ton garde-manger ou tes restes 🎉" : "La liste de courses apparaîtra après génération."}</div>`;
+    el.innerHTML=`<div class="empty" style="padding:18px">${state.generatedMealIds.length ? "Tout est déjà dans « Ce que j’ai déjà » 🎉" : "La liste de courses apparaîtra après génération."}</div>`;
     return;
   }
   el.innerHTML=categories.map(cat=>`
@@ -1615,27 +2018,41 @@ function parseIngredientList(text){
 
 function renderSettings(){
   const pantry=document.getElementById("pantryInput");
-  const leftovers=document.getElementById("leftoversInput");
   if(pantry && document.activeElement!==pantry) pantry.value=state.shared.pantry.join(", ");
-  if(leftovers && document.activeElement!==leftovers) leftovers.value=state.shared.leftovers.join(", ");
   const p=state.shared.preferences;
   const map={prefVegetarian:"vegetarian",prefNoPork:"noPork",prefNoFish:"noFish",prefQuick:"quick",prefKids:"kids",prefDiscovery:"discovery"};
   Object.entries(map).forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.checked=!!p[key];});
+
+  const total=state.shared.pantry.length;
   const status=document.getElementById("pantryStatus");
-  if(status) status.textContent=state.shared.pantry.length?`${state.shared.pantry.length} ingrédient${state.shared.pantry.length>1?"s":""} disponible${state.shared.pantry.length>1?"s":""}`:"";
+  if(status){
+    status.textContent=total ? `${total} ingrédient${total>1?"s":""} enregistré${total>1?"s":""}` : "";
+  }
+
+  const list=document.getElementById("availableItemsList");
+  if(list){
+    list.innerHTML=state.shared.pantry.map(name=>`<span class="available-chip"><span>${escapeHtml(name)}</span><button type="button" data-remove-available="pantry" data-name="${escapeHtml(name)}" aria-label="Retirer ${escapeHtml(name)}">×</button></span>`).join("") || `<span class="muted" style="font-size:11px">Aucun ingrédient enregistré.</span>`;
+    list.querySelectorAll("[data-remove-available]").forEach(btn=>{
+      btn.addEventListener("click",()=>removeAvailableItem(btn.dataset.removeAvailable,btn.dataset.name));
+    });
+  }
 }
 
 async function savePantry(){
   state.shared.pantry=parseIngredientList(document.getElementById("pantryInput").value);
+  state.shared.leftovers=[];
   state.shared.shoppingChecks={};
   await saveSharedAppState();renderAll();
 }
-async function saveLeftovers(){
-  state.shared.leftovers=parseIngredientList(document.getElementById("leftoversInput").value);
+
+async function removeAvailableItem(source,name){
+  const key=canonicalIngredient(name);
+  state.shared.pantry=state.shared.pantry.filter(item=>canonicalIngredient(item)!==key);
+  state.shared.leftovers=[];
   state.shared.shoppingChecks={};
-  await saveSharedAppState();renderAll();
+  await saveSharedAppState();
+  renderAll();
 }
-async function clearLeftovers(){state.shared.leftovers=[];await saveSharedAppState();renderAll();}
 async function clearShoppingChecks(){state.shared.shoppingChecks={};await saveSharedAppState();renderShopping();}
 async function updatePreference(key,value){state.shared.preferences[key]=value;state.generatedMealIds=[];state.discoveryId=null;setActiveDiscovery(null);await saveSharedAppState();renderAll();}
 
@@ -1659,12 +2076,18 @@ mealCountEl.addEventListener("change",e=>{
   save();
   renderAll();
 });
+document.getElementById("cancelLeftoversBtn").addEventListener("click",closeLeftoversModal);
+document.getElementById("confirmLeftoversBtn").addEventListener("click",confirmLeftoversSelection);
+document.getElementById("leftoversModal").addEventListener("click",e=>{
+  if(e.target===document.getElementById("leftoversModal")) closeLeftoversModal();
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape" && document.getElementById("leftoversModal").classList.contains("open")) closeLeftoversModal();
+});
 document.getElementById("generateBtn").addEventListener("click",generateMeals);
 document.getElementById("addManualRecipeBtn").addEventListener("click",addManualRecipe);
 document.getElementById("analyzeRecipeUrlBtn").addEventListener("click",analyzeRecipeUrl);
 document.getElementById("savePantryBtn").addEventListener("click",savePantry);
-document.getElementById("saveLeftoversBtn").addEventListener("click",saveLeftovers);
-document.getElementById("clearLeftoversBtn").addEventListener("click",clearLeftovers);
 document.getElementById("clearShoppingChecksBtn").addEventListener("click",clearShoppingChecks);
 document.getElementById("shareKeepBtn").addEventListener("click",shareShoppingToKeep);
 [["prefVegetarian","vegetarian"],["prefNoPork","noPork"],["prefNoFish","noFish"],["prefQuick","quick"],["prefKids","kids"],["prefDiscovery","discovery"]].forEach(([id,key])=>{
