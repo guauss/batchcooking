@@ -99,7 +99,7 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 .lock-banner.show{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .week-label{font-size:11px;color:var(--muted);font-weight:800;margin-top:5px}
 .history-panel{margin-top:22px}
-.history-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:14px}
+.history-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
 .history-card{border:1px solid var(--line);border-radius:16px;padding:12px;background:#fbfcfa;min-width:0}
 .history-card h4{margin:0 0 8px;font-size:13px}
 .history-meals{display:grid;gap:5px;font-size:11px;color:var(--muted)}
@@ -220,7 +220,7 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 
   <section class="panel history-panel">
     <div class="eyebrow">Historique</div>
-    <h3 style="margin-top:6px">🗓️ 5 dernières semaines</h3>
+    <h3 style="margin-top:6px">🗓️ 3 dernières semaines</h3>
     <p class="muted" style="font-size:12px;margin:5px 0 0">Les repas d'une semaine bloquée sont mémorisés et ne sont pas reproposés la semaine suivante.</p>
     <div id="weekHistory" class="history-grid"></div>
   </section>
@@ -452,7 +452,7 @@ function mergeSharedState(value){
     preferences:{...DEFAULT_SHARED_STATE.preferences,...(incoming.preferences||{})},
     feedback:incoming.feedback && typeof incoming.feedback === "object" ? incoming.feedback : {},
     shoppingChecks:incoming.shoppingChecks && typeof incoming.shoppingChecks === "object" ? incoming.shoppingChecks : {},
-    weekHistory:Array.isArray(incoming.weekHistory) ? incoming.weekHistory.slice(0,5) : [],
+    weekHistory:Array.isArray(incoming.weekHistory) ? incoming.weekHistory.slice(0,3) : [],
     lockedWeek:incoming.lockedWeek && typeof incoming.lockedWeek === "object" ? incoming.lockedWeek : null,
     planningWeekStart:typeof incoming.planningWeekStart === "string" ? incoming.planningWeekStart : ""
   };
@@ -1725,7 +1725,7 @@ async function lockCurrentWeek(){
   };
 
   const history=(state.shared.weekHistory||[]).filter(item=>item.weekKey!==snapshot.weekKey);
-  state.shared.weekHistory=[snapshot,...history].slice(0,5);
+  state.shared.weekHistory=[snapshot,...history].slice(0,3);
   state.shared.lockedWeek=snapshot;
   state.shared.planningWeekStart=info.start;
   await saveSharedAppState();
@@ -1805,7 +1805,7 @@ function renderWeekPlanning(){
 function renderWeekHistory(){
   const el=document.getElementById("weekHistory");
   if(!el) return;
-  const history=(state.shared.weekHistory||[]).slice(0,5);
+  const history=(state.shared.weekHistory||[]).slice(0,3);
   if(!history.length){
     el.innerHTML='<div class="history-empty">Aucune semaine bloquée pour le moment.</div>';
     return;
