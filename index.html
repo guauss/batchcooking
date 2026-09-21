@@ -110,6 +110,12 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 @media(max-width:1100px){.history-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.history-grid{grid-template-columns:1fr}.plan-lock-actions{width:100%}.plan-lock-actions .btn{flex:1}}
 
+
+.recipe-complexity{display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:#fafbf9;font-size:12px;font-weight:800;cursor:pointer}
+.recipe-complexity input{width:17px;height:17px}
+.complexity-badge{display:inline-flex;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900;margin-top:7px;background:#eef2ee;color:#667066}
+.complexity-badge.elaborate{background:#fff0d8;color:#9a611e}
+
 </style>
 </head>
 <body>
@@ -147,7 +153,7 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
   <div class="hero">
     <div class="hero-card">
       <div class="eyebrow">Planification automatique</div>
-      <h2>Indique pour combien de personne et de repas. PoPot fait le reste.</h2>
+      <p class="muted" style="font-size:12px;margin:0 0 8px">Indique le nombre de personne et de repas. PoPot fait le reste.</p>
       <div class="controls">
         <div class="control"><label>Personnes</label><select id="people"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
         <div class="control"><label>Repas</label><select id="mealCount"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option></select></div>
@@ -166,16 +172,14 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 
   <div class="smart-grid">
     <section class="smart-card">
-      <div class="eyebrow">À la maison</div>
-      <h3>🏠 Ce que j’ai déjà</h3>
-      <p class="muted" style="font-size:12px;margin:0 0 8px">PoPot utilise ce que tu as déjà pour planifier la semaine.</p>
+      <div class="eyebrow">🏠 Ce que j’ai déjà</div>
+      <p class="muted" style="font-size:12px;margin:0 0 8px">PoPot utilise ce que tu as déjà chez toi pour planifier la semaine.</p>
       <textarea id="pantryInput" placeholder="Ex. riz, pâtes, oignons, œufs"></textarea>
       <div class="smart-actions"><button class="btn btn-soft" id="savePantryBtn">Enregistrer</button></div>
     </section>
 
     <section class="smart-card">
       <div class="eyebrow">Préférences</div>
-      <h3>🎛️ Mes filtres</h3>
       <div class="pref-list">
         <label class="pref-item"><input type="checkbox" id="prefVegetarian"> Végétarien</label>
         <label class="pref-item"><input type="checkbox" id="prefNoPork"> Sans porc</label>
@@ -190,7 +194,7 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
     <main class="panel">
       <div class="plan-head">
         <div>
-          <h3>Repas proposés</h3>
+          <p class="eyebrow">Repas proposés</p>
           <p class="muted" style="font-size:12px;margin:5px 0 0">La sélection privilégie les recettes ayant le plus d'ingrédients en commun et évite les repas de la semaine précédente.</p>
           <div class="week-label" id="planningWeekLabel"></div>
         </div>
@@ -204,7 +208,7 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
       <div id="mealList" class="meal-list"></div>
     </main>
     <aside class="panel shopping">
-      <h3>🛒 Liste de courses</h3>
+      <p class="eyebrow">🛒 Liste de courses</p>
       <p class="muted" style="font-size:12px">Quantités pour <strong id="shoppingPeople">4 personnes</strong>.</p>
       <div class="shopping-tools">
         <button class="mini-btn" id="shareKeepBtn">📌 Envoyer vers Google Keep</button>
@@ -1031,6 +1035,33 @@ function feedbackFor(recipe){
   return state.shared.feedback[String(recipe.id)] || {};
 }
 
+function isElaborateRecipe(recipe){
+  // Toute recette non encore classée est considérée comme simple par défaut.
+  return feedbackFor(recipe).elaborated === true;
+}
+
+function isLastMealSlot(index){
+  return index === Math.max(0,state.mealCount-1);
+}
+
+function recipesForSlot(index, discoveryEnabled){
+  const eligible = cloudRecipes
+    .filter(recipeAllowed)
+    .filter(recipe=>!wasInPreviousWeek(recipe));
+
+  const isLast=isLastMealSlot(index);
+
+  // Avec découverte : le dernier repas est réservé à la découverte web.
+  if(discoveryEnabled){
+    if(isLast) return [];
+    return eligible.filter(recipe=>!isElaborateRecipe(recipe));
+  }
+
+  // Sans découverte : le dernier repas est élaboré, tous les précédents sont simples.
+  return isLast
+    ? eligible.filter(isElaborateRecipe)
+    : eligible.filter(recipe=>!isElaborateRecipe(recipe));
+}
 function ingredientSetFor(recipe){
   return new Set((recipe.ingredients||[]).map(i=>canonicalIngredient(i[0])));
 }
@@ -1800,74 +1831,101 @@ async function generateMeals(){
     alert("Cette semaine est bloquée. Utilise « Modifier cette semaine » ou « Nouvelle semaine » avant de générer un nouveau menu.");
     return;
   }
+
   const saved = cloudRecipes.slice().sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
   const eligibleSaved = saved.filter(recipeAllowed).filter(recipe=>!wasInPreviousWeek(recipe));
   const chosen=[];
   const used=new Set();
   const discoveryEnabled=state.shared.preferences.discovery !== false;
-  const savedTarget=Math.max(0,state.mealCount-(discoveryEnabled?1:0));
 
   if(!currentUser){
     alert("Connecte-toi d’abord pour charger Mes recettes.");
     return;
   }
 
-  if(savedTarget>0 && !eligibleSaved.length){
+  if(!eligibleSaved.length && state.mealCount>0){
     alert("Aucune recette disponible ne correspond aux filtres après exclusion des repas de la semaine précédente. Modifie tes préférences ou ajoute des recettes compatibles.");
     return;
   }
 
-  for(let i=0;i<savedTarget;i++){
-    let pool=eligibleSaved.filter(r=>!used.has(r.id));
-    if(!pool.length) pool=eligibleSaved;
-    const recipe = chosen.length ? pickBest(pool,chosen) : pickBest(pool,[]);
+  const simplePool=eligibleSaved.filter(recipe=>!isElaborateRecipe(recipe));
+  const elaboratePool=eligibleSaved.filter(isElaborateRecipe);
+
+  // Tous les repas avant le dernier sont simples.
+  const simpleTarget=Math.max(0,state.mealCount-1);
+
+  if(simpleTarget>0 && !simplePool.length){
+    alert("Aucune recette « simple » n’est disponible. Les nouvelles recettes sont simples par défaut ; tu peux aussi décocher « Élaboré » dans Mes recettes.");
+    return;
+  }
+
+  for(let i=0;i<simpleTarget;i++){
+    let pool=simplePool.filter(r=>!used.has(r.id));
+    if(!pool.length) pool=simplePool;
+    const recipe=chosen.length ? pickBest(pool,chosen) : pickBest(pool,[]);
     if(!recipe) break;
     chosen.push(recipe);
     used.add(recipe.id);
   }
 
-  if(chosen.length < savedTarget){
-    alert("PoPot n'a pas assez de recettes compatibles avec tes filtres pour remplir tous les repas.");
+  if(chosen.length<simpleTarget){
+    alert("PoPot n'a pas assez de recettes simples compatibles pour remplir les repas avant le dernier.");
     return;
   }
 
-  // Mode 100 % bibliothèque : aucun appel web, tous les repas restent modifiables via la liste déroulante.
-  if(!discoveryEnabled){
-    state.discoveryId=null;
-    setActiveDiscovery(null);
-    state.generatedMealIds=chosen.slice(0,state.mealCount).map(r=>r.id);
-    state.shared.shoppingChecks={};
-    await saveSharedAppState();
-    save();
-    renderAll();
-    return;
-  }
+  if(discoveryEnabled){
+    // Le dernier repas est toujours la découverte web.
+    setDiscoveryLoading(true);
+    try{
+      const discovery=await fetchDynamicDiscovery(chosen);
+      setActiveDiscovery(discovery);
 
-  setDiscoveryLoading(true);
-  try{
-    const discovery = await fetchDynamicDiscovery(chosen);
-    setActiveDiscovery(discovery);
+      if(discovery.externalId){
+        state.discoveryHistory=[
+          ...state.discoveryHistory.filter(id=>String(id)!==String(discovery.externalId)),
+          String(discovery.externalId)
+        ].slice(-40);
+      }
 
-    if(discovery.externalId){
-      state.discoveryHistory = [
-        ...state.discoveryHistory.filter(id => String(id) !== String(discovery.externalId)),
-        String(discovery.externalId)
-      ].slice(-40);
+      const orderedMeals=[...chosen,discovery].slice(0,state.mealCount);
+      state.generatedMealIds=orderedMeals.map(r=>r.id);
+      state.discoveryId=discovery.id;
+      state.shared.shoppingChecks={};
+      await saveSharedAppState();
+      save();
+      renderAll();
+    }catch(error){
+      console.error(error);
+      alert("Impossible de trouver une recette découverte compatible sur le web pour le moment : "+(error.message||error));
+    }finally{
+      setDiscoveryLoading(false);
     }
-
-    if(state.mealCount>=1) chosen.push(discovery);
-    state.generatedMealIds=chosen.slice(0,state.mealCount).map(r=>r.id);
-    state.discoveryId=discovery.id;
-    state.shared.shoppingChecks={};
-    await saveSharedAppState();
-    save();
-    renderAll();
-  }catch(error){
-    console.error(error);
-    alert("Impossible de trouver une recette découverte compatible sur le web pour le moment : " + (error.message || error));
-  }finally{
-    setDiscoveryLoading(false);
+    return;
   }
+
+  // Sans découverte, le dernier repas est toujours élaboré.
+  if(!elaboratePool.length){
+    alert("Aucune recette « élaborée » n’est disponible pour le dernier repas. Coche « Élaboré » sur au moins une recette dans Mes recettes.");
+    return;
+  }
+
+  let elaborateCandidates=elaboratePool.filter(r=>!used.has(r.id));
+  if(!elaborateCandidates.length) elaborateCandidates=elaboratePool;
+  const elaborateRecipe=chosen.length ? pickBest(elaborateCandidates,chosen) : pickBest(elaborateCandidates,[]);
+
+  if(!elaborateRecipe){
+    alert("Impossible de sélectionner une recette élaborée pour le dernier repas.");
+    return;
+  }
+
+  chosen.push(elaborateRecipe);
+  state.discoveryId=null;
+  setActiveDiscovery(null);
+  state.generatedMealIds=chosen.slice(0,state.mealCount).map(r=>r.id);
+  state.shared.shoppingChecks={};
+  await saveSharedAppState();
+  save();
+  renderAll();
 }
 function calculateReuse(){
   const chosen=currentPlanRecipes();
@@ -1916,6 +1974,7 @@ function renderMeals(){
   const savedRecipes=cloudRecipes
     .slice()
     .sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
+  const discoveryEnabled=state.shared.preferences.discovery !== false;
 
   if(!chosen.length){
     el.innerHTML=`<div class="empty" style="grid-column:1/-1">Clique sur <strong>Générer mes repas</strong> pour créer un menu anti-gaspillage.</div>`;
@@ -1927,10 +1986,14 @@ function renderMeals(){
     const shared=sharedIngredientsFor(recipe);
     const pantryMatches=isNew ? [...new Set(pantryMatchesForRecipe(recipe))] : [];
 
+    const slotRecipes = recipesForSlot(index,discoveryEnabled)
+      .slice()
+      .sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
+
     const librarySelector = !locked && !isNew ? `
       <div class="meal-actions">
         <select class="meal-select" data-replace-index="${index}">
-          ${savedRecipes.map(r=>`<option value="${r.id}" ${r.id===recipe.id?"selected":""}>${r.name}</option>`).join("")}
+          ${slotRecipes.map(r=>`<option value="${r.id}" ${r.id===recipe.id?"selected":""}>${r.name}</option>`).join("")}
         </select>
       </div>` : "";
 
@@ -1946,6 +2009,7 @@ function renderMeals(){
           <div class="emoji">${recipe.emoji}</div>
           <div>
             <span class="badge ${isNew?"badge-new web-badge":""}">${isNew?(recipe.sourceSite?"🇫🇷 Découverte · "+recipe.sourceSite:"🌐 Découverte web"):"📚 Ma bibliothèque"}</span>
+            ${!isNew ? `<span class="complexity-badge ${isElaborateRecipe(recipe)?"elaborate":""}">${isElaborateRecipe(recipe)?"🍳 Élaboré":"⚡ Simple"}</span>` : ""}
             <h4>Repas ${index+1} · ${recipe.name}</h4>
             <p>⏱️ ${recipe.time} min</p>
           </div>
@@ -2053,14 +2117,31 @@ async function confirmLeftoversSelection(){
 
 function replaceKnownMeal(index,newId){
   if(isPlanLocked()) return;
-  const newRecipe = recipeById(newId);
+  const newRecipe=recipeById(newId);
   if(!newRecipe) return;
 
-  state.generatedMealIds[index] = newId;
+  const discoveryEnabled=state.shared.preferences.discovery !== false;
+  const last=isLastMealSlot(index);
+
+  if(discoveryEnabled && last){
+    alert("Le dernier repas est réservé à la recette découverte.");
+    renderAll();
+    return;
+  }
+
+  const mustBeElaborate=!discoveryEnabled && last;
+  if(isElaborateRecipe(newRecipe)!==mustBeElaborate){
+    alert(mustBeElaborate
+      ? "Le dernier repas doit être une recette élaborée."
+      : "Ce repas doit être une recette simple.");
+    renderAll();
+    return;
+  }
+
+  state.generatedMealIds[index]=newId;
   save();
   renderAll();
 }
-
 async function changeDiscovery(){
   if(isPlanLocked()) return;
   const discoveryIndex = state.generatedMealIds.findIndex(id => id === state.discoveryId);
@@ -2207,7 +2288,7 @@ function renderReuse(){
   document.getElementById("reuseBar").style.width=r.score+"%";
   const detail=document.getElementById("reuseDetail");
   if(!currentPlanRecipes().length) detail.textContent="Génère un menu pour voir le score.";
-  else if(r.reused.length) detail.textContent=`${r.reused.length} ingrédients sont partagés entre plusieurs repas · ${r.totalUnique} ingrédients différents au total.`;
+  else if(r.reused.length) detail.textContent=`${r.reused.length} ingrédients`;
   else detail.textContent="Cette génération partage peu d'ingrédients.";
 }
 
@@ -2229,6 +2310,11 @@ function renderLibrary(){
       <div class="visual">${recipe.emoji}</div>
       <h4>${recipe.name}</h4>
       <div class="ingredient-mini">${recipe.ingredients.map(i=>i[0]).slice(0,6).join(" · ")}</div>
+      <label class="recipe-complexity">
+        <input type="checkbox" data-elaborated="${recipe.id}" ${isElaborateRecipe(recipe)?"checked":""}>
+        <span>Élaboré</span>
+      </label>
+      <span class="complexity-badge ${isElaborateRecipe(recipe)?"elaborate":""}">${isElaborateRecipe(recipe)?"🍳 Élaboré":"⚡ Simple"}</span>
       <div class="rating-row" aria-label="Note">
         ${[1,2,3,4,5].map(n=>`<button class="star-btn ${n<=rating?"active":""}" data-rate="${recipe.id}" data-rating="${n}" title="${n}/5">⭐</button>`).join("")}
       </div>
@@ -2242,11 +2328,19 @@ function renderLibrary(){
     </article>`;
   }).join("");
 
+  grid.querySelectorAll("[data-elaborated]").forEach(box=>box.addEventListener("change",()=>setRecipeElaborated(box.dataset.elaborated,box.checked)));
   grid.querySelectorAll("[data-rate]").forEach(btn=>btn.addEventListener("click",()=>rateRecipe(btn.dataset.rate,Number(btn.dataset.rating))));
   grid.querySelectorAll("[data-favorite]").forEach(btn=>btn.addEventListener("click",()=>toggleFavorite(btn.dataset.favorite)));
   grid.querySelectorAll("[data-block]").forEach(btn=>btn.addEventListener("click",()=>toggleBlocked(btn.dataset.block)));
   grid.querySelectorAll("[data-edit]").forEach(btn=>btn.addEventListener("click",()=>editCloudRecipe(btn.dataset.edit)));
   grid.querySelectorAll("[data-delete]").forEach(btn=>btn.addEventListener("click",()=>deleteCloudRecipe(btn.dataset.delete)));
+}
+
+async function setRecipeElaborated(id,elaborated){
+  const fb=feedbackFor({id});
+  state.shared.feedback[id]={...fb,elaborated:!!elaborated};
+  await saveSharedAppState();
+  renderAll();
 }
 
 async function rateRecipe(id,rating){
