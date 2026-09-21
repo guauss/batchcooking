@@ -92,6 +92,24 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 .leftovers-modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 @media(max-width:600px){.leftovers-dialog{padding:16px}.leftovers-modal-actions .btn{flex:1}}
 
+
+.plan-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.plan-lock-actions{display:flex;gap:8px;flex-wrap:wrap}
+.lock-banner{display:none;margin:12px 0 0;padding:11px 13px;border-radius:14px;background:#eef7f1;color:#315a40;font-size:12px;font-weight:750;border:1px solid #cee4d6}
+.lock-banner.show{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.week-label{font-size:11px;color:var(--muted);font-weight:800;margin-top:5px}
+.history-panel{margin-top:22px}
+.history-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:14px}
+.history-card{border:1px solid var(--line);border-radius:16px;padding:12px;background:#fbfcfa;min-width:0}
+.history-card h4{margin:0 0 8px;font-size:13px}
+.history-meals{display:grid;gap:5px;font-size:11px;color:var(--muted)}
+.history-meals a{color:inherit;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-meals a:hover{text-decoration:underline;color:var(--accent)}
+.history-empty{color:var(--muted);font-size:12px;padding:10px 0}
+.locked-card .meal-select,.locked-card [data-change-discovery]{display:none!important}
+@media(max-width:1100px){.history-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.history-grid{grid-template-columns:1fr}.plan-lock-actions{width:100%}.plan-lock-actions .btn{flex:1}}
+
 </style>
 </head>
 <body>
@@ -130,7 +148,6 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
     <div class="hero-card">
       <div class="eyebrow">Planification automatique</div>
       <h2>Indique pour combien de personne et de repas. PoPot fait le reste.</h2>
-      <p class="muted">La génération cherche à réutiliser au maximum les mêmes ingrédients. Active <strong>Recette découverte</strong> si tu veux qu'un des repas soit recherché sur le web ; sinon tous les repas proviennent de “Mes recettes”.</p>
       <div class="controls">
         <div class="control"><label>Personnes</label><select id="people"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
         <div class="control"><label>Repas</label><select id="mealCount"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option></select></div>
@@ -151,7 +168,7 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
     <section class="smart-card">
       <div class="eyebrow">À la maison</div>
       <h3>🏠 Ce que j’ai déjà</h3>
-      <p class="muted" style="font-size:12px;margin:0 0 8px">Ajoute ici les ingrédients que tu as déjà. Tu peux aussi les ajouter depuis un repas avec « J’ai des restes ». PoPot les favorise dans les menus et les retire de la liste de courses.</p>
+      <p class="muted" style="font-size:12px;margin:0 0 8px">PoPot utilise ce que tu as déjà pour planifier la semaine.</p>
       <textarea id="pantryInput" placeholder="Ex. riz, pâtes, oignons, œufs"></textarea>
       <div class="smart-actions"><button class="btn btn-soft" id="savePantryBtn">Enregistrer</button></div>
     </section>
@@ -161,6 +178,7 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
       <h3>🎛️ Mes filtres</h3>
       <div class="pref-list">
         <label class="pref-item"><input type="checkbox" id="prefVegetarian"> Végétarien</label>
+        <label class="pref-item"><input type="checkbox" id="prefNoPork"> Sans porc</label>
         <label class="pref-item"><input type="checkbox" id="prefNoFish"> Sans poisson</label>
         <label class="pref-item"><input type="checkbox" id="prefQuick"> Rapide (30 min max)</label>
         <label class="pref-item"><input type="checkbox" id="prefKids"> Plutôt adapté aux enfants</label>
@@ -170,8 +188,19 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 
   <div class="layout">
     <main class="panel">
-      <h3>Repas proposés</h3>
-      <p class="muted" style="font-size:12px;margin:5px 0 0">La sélection privilégie les recettes ayant le plus d'ingrédients en commun.</p>
+      <div class="plan-head">
+        <div>
+          <h3>Repas proposés</h3>
+          <p class="muted" style="font-size:12px;margin:5px 0 0">La sélection privilégie les recettes ayant le plus d'ingrédients en commun et évite les repas de la semaine précédente.</p>
+          <div class="week-label" id="planningWeekLabel"></div>
+        </div>
+        <div class="plan-lock-actions">
+          <button class="btn btn-primary" id="lockWeekBtn">🔒 Valider et bloquer la semaine</button>
+          <button class="btn btn-soft" id="unlockWeekBtn" style="display:none">🔓 Modifier cette semaine</button>
+          <button class="btn btn-outline" id="newWeekBtn" style="display:none">＋ Nouvelle semaine</button>
+        </div>
+      </div>
+      <div class="lock-banner" id="lockedWeekBanner"></div>
       <div id="mealList" class="meal-list"></div>
     </main>
     <aside class="panel shopping">
@@ -184,6 +213,13 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
       <div id="shoppingList"></div>
     </aside>
   </div>
+
+  <section class="panel history-panel">
+    <div class="eyebrow">Historique</div>
+    <h3 style="margin-top:6px">🗓️ 5 dernières semaines</h3>
+    <p class="muted" style="font-size:12px;margin:5px 0 0">Les repas d'une semaine bloquée sont mémorisés et ne sont pas reproposés la semaine suivante.</p>
+    <div id="weekHistory" class="history-grid"></div>
+  </section>
 </section>
 
 <section id="library" class="tab-panel">
@@ -379,7 +415,10 @@ const DEFAULT_SHARED_STATE = {
   leftovers:[],
   preferences:{vegetarian:false,noPork:false,noFish:false,quick:false,kids:false,discovery:true},
   feedback:{},
-  shoppingChecks:{}
+  shoppingChecks:{},
+  weekHistory:[],
+  lockedWeek:null,
+  planningWeekStart:""
 };
 
 function mergeSharedState(value){
@@ -408,7 +447,10 @@ function mergeSharedState(value){
     leftovers:[],
     preferences:{...DEFAULT_SHARED_STATE.preferences,...(incoming.preferences||{})},
     feedback:incoming.feedback && typeof incoming.feedback === "object" ? incoming.feedback : {},
-    shoppingChecks:incoming.shoppingChecks && typeof incoming.shoppingChecks === "object" ? incoming.shoppingChecks : {}
+    shoppingChecks:incoming.shoppingChecks && typeof incoming.shoppingChecks === "object" ? incoming.shoppingChecks : {},
+    weekHistory:Array.isArray(incoming.weekHistory) ? incoming.weekHistory.slice(0,5) : [],
+    lockedWeek:incoming.lockedWeek && typeof incoming.lockedWeek === "object" ? incoming.lockedWeek : null,
+    planningWeekStart:typeof incoming.planningWeekStart === "string" ? incoming.planningWeekStart : ""
   };
 }
 
@@ -832,11 +874,16 @@ async function findFrenchDiscovery(selectedRecipes,excluded,savedNames){
 }
 
 async function fetchMealDbFallback(selectedRecipes,excludeExternalIds=[]){
+  const previous=previousWeekRecipeIdentity();
   const excluded = new Set([
     ...excludeExternalIds.map(String),
-    ...state.discoveryHistory.map(String)
+    ...state.discoveryHistory.map(String),
+    ...previous.externalIds
   ]);
-  const savedNames = new Set(cloudRecipes.map(r => normalizeName(r.name)));
+  const savedNames = new Set([
+    ...cloudRecipes.map(r => normalizeName(r.name)),
+    ...previous.names
+  ]);
   const pantryIngredients = pantryApiIngredients();
   const preferredIngredients = selectedApiIngredients(selectedRecipes);
 
@@ -925,11 +972,16 @@ async function fetchMealDbFallback(selectedRecipes,excludeExternalIds=[]){
 }
 
 async function fetchDynamicDiscovery(selectedRecipes, excludeExternalIds=[]){
+  const previous=previousWeekRecipeIdentity();
   const excluded = new Set([
     ...excludeExternalIds.map(String),
-    ...state.discoveryHistory.map(String)
+    ...state.discoveryHistory.map(String),
+    ...previous.externalIds
   ]);
-  const savedNames = new Set(cloudRecipes.map(r => normalizeName(r.name)));
+  const savedNames = new Set([
+    ...cloudRecipes.map(r => normalizeName(r.name)),
+    ...previous.names
+  ]);
 
   // 1) Priorité aux sites de recettes français et aux mots saisis en français.
   try{
@@ -948,8 +1000,9 @@ function setDiscoveryLoading(isLoading){
   const generate = document.getElementById("generateBtn");
   if(list) list.classList.toggle("discovery-loading", !!isLoading);
   if(generate){
-    generate.disabled = !!isLoading;
-    generate.textContent = isLoading ? "🇫🇷 Recherche d’une recette…" : "✨ Générer mes repas";
+    if(isLoading) generate.dataset.loading="1"; else delete generate.dataset.loading;
+    generate.disabled = !!isLoading || isPlanLocked();
+    generate.textContent = isLoading ? "🇫🇷 Recherche d’une recette…" : (isPlanLocked()?"🔒 Semaine validée":"✨ Générer mes repas");
   }
 }
 
@@ -1496,9 +1549,259 @@ async function addManualRecipe(){
   }
 }
 
+
+function mondayForDate(date){
+  const d=new Date(date);
+  d.setHours(12,0,0,0);
+  const day=d.getDay();
+  const diff=(day===0?-6:1-day);
+  d.setDate(d.getDate()+diff);
+  return d;
+}
+
+function isoDateLocal(date){
+  const y=date.getFullYear();
+  const m=String(date.getMonth()+1).padStart(2,"0");
+  const d=String(date.getDate()).padStart(2,"0");
+  return `${y}-${m}-${d}`;
+}
+
+function weekInfoFromStart(startValue){
+  const base=startValue ? new Date(startValue+"T12:00:00") : mondayForDate(new Date());
+  const start=mondayForDate(base);
+  const end=new Date(start);
+  end.setDate(end.getDate()+6);
+  const fmt=new Intl.DateTimeFormat("fr-FR",{day:"numeric",month:"long"});
+  const fmtYear=new Intl.DateTimeFormat("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+  return {
+    key:isoDateLocal(start),
+    start:isoDateLocal(start),
+    label:`Semaine du ${fmt.format(start)} au ${fmtYear.format(end)}`
+  };
+}
+
+function currentPlanningWeekInfo(){
+  if(state.shared.lockedWeek && state.shared.lockedWeek.weekStart){
+    return weekInfoFromStart(state.shared.lockedWeek.weekStart);
+  }
+  return weekInfoFromStart(state.shared.planningWeekStart || "");
+}
+
+function isPlanLocked(){
+  return !!(state.shared.lockedWeek && Array.isArray(state.shared.lockedWeek.meals) && state.shared.lockedWeek.meals.length);
+}
+
+function snapshotRecipe(recipe,index){
+  return {
+    id:recipe.id || `meal-${index}`,
+    externalId:recipe.externalId || null,
+    name:recipe.name || `Repas ${index+1}`,
+    emoji:recipe.emoji || "🍽️",
+    time:Number(recipe.time)||30,
+    tags:Array.isArray(recipe.tags)?recipe.tags:[],
+    sourceUrl:recipe.sourceUrl || recipeSourceUrl(recipe),
+    sourceSite:recipe.sourceSite || "",
+    ingredients:Array.isArray(recipe.ingredients)?recipe.ingredients:[],
+    isDiscovery:state.discoveryId===recipe.id || !!recipe.isDiscovery,
+    webDiscovery:!!recipe.webDiscovery
+  };
+}
+
+function recipeFromSnapshot(meal,index){
+  return {
+    id:meal.id || `locked-${index}`,
+    externalId:meal.externalId || null,
+    name:meal.name || `Repas ${index+1}`,
+    emoji:meal.emoji || "🍽️",
+    time:Number(meal.time)||30,
+    tags:Array.isArray(meal.tags)?meal.tags:[],
+    sourceUrl:meal.sourceUrl || "",
+    sourceSite:meal.sourceSite || "",
+    ingredients:Array.isArray(meal.ingredients)?meal.ingredients:[],
+    isDiscovery:!!meal.isDiscovery,
+    webDiscovery:!!meal.webDiscovery,
+    lockedSnapshot:true
+  };
+}
+
+function currentPlanRecipes(){
+  if(isPlanLocked()){
+    return state.shared.lockedWeek.meals.map(recipeFromSnapshot);
+  }
+  return state.generatedMealIds.map(recipeById).filter(Boolean);
+}
+
+function currentPlanPeople(){
+  return isPlanLocked() ? Number(state.shared.lockedWeek.people)||state.people : state.people;
+}
+
+function previousLockedWeek(){
+  const history=Array.isArray(state.shared.weekHistory)?state.shared.weekHistory:[];
+  if(!history.length) return null;
+  if(isPlanLocked() && history[0] && history[0].id===state.shared.lockedWeek.id){
+    return history[1] || null;
+  }
+  return history[0] || null;
+}
+
+function previousWeekRecipeIdentity(){
+  const previous=previousLockedWeek();
+  const names=new Set();
+  const ids=new Set();
+  const externalIds=new Set();
+  const urls=new Set();
+  if(previous && Array.isArray(previous.meals)){
+    previous.meals.forEach(meal=>{
+      if(meal.name) names.add(normalizeName(meal.name));
+      if(meal.id) ids.add(String(meal.id));
+      if(meal.externalId) externalIds.add(String(meal.externalId));
+      if(meal.sourceUrl) urls.add(String(meal.sourceUrl));
+    });
+  }
+  return {names,ids,externalIds,urls};
+}
+
+function wasInPreviousWeek(recipe){
+  const previous=previousWeekRecipeIdentity();
+  return previous.ids.has(String(recipe.id||""))
+    || previous.names.has(normalizeName(recipe.name||""))
+    || (recipe.externalId && previous.externalIds.has(String(recipe.externalId)))
+    || (recipe.sourceUrl && previous.urls.has(String(recipe.sourceUrl)));
+}
+
+async function lockCurrentWeek(){
+  if(isPlanLocked()) return;
+  const meals=state.generatedMealIds.map(recipeById).filter(Boolean);
+  if(!meals.length){
+    alert("Génère d'abord tes repas avant de valider la semaine.");
+    return;
+  }
+  if(meals.length!==state.mealCount){
+    alert("La planification n'est pas complète. Génère tous les repas avant de la bloquer.");
+    return;
+  }
+
+  const info=currentPlanningWeekInfo();
+  const snapshot={
+    id:`${info.key}-${Date.now()}`,
+    weekKey:info.key,
+    weekStart:info.start,
+    label:info.label,
+    lockedAt:new Date().toISOString(),
+    people:state.people,
+    mealCount:state.mealCount,
+    meals:meals.map(snapshotRecipe)
+  };
+
+  const history=(state.shared.weekHistory||[]).filter(item=>item.weekKey!==snapshot.weekKey);
+  state.shared.weekHistory=[snapshot,...history].slice(0,5);
+  state.shared.lockedWeek=snapshot;
+  state.shared.planningWeekStart=info.start;
+  await saveSharedAppState();
+  renderAll();
+}
+
+async function unlockCurrentWeek(){
+  if(!isPlanLocked()) return;
+  const locked=state.shared.lockedWeek;
+  if(!confirm("Débloquer cette semaine pour la modifier ? Elle sera retirée de l'historique tant qu'elle n'est pas revalidée.")) return;
+
+  state.shared.weekHistory=(state.shared.weekHistory||[]).filter(item=>item.id!==locked.id);
+  state.shared.planningWeekStart=locked.weekStart || state.shared.planningWeekStart;
+  state.shared.lockedWeek=null;
+  state.generatedMealIds=[];
+  state.discoveryId=null;
+  setActiveDiscovery(null);
+  state.shared.shoppingChecks={};
+  await saveSharedAppState();
+  save();
+  renderAll();
+}
+
+async function startNewWeek(){
+  if(!isPlanLocked()) return;
+  const locked=state.shared.lockedWeek;
+  const base=new Date((locked.weekStart||currentPlanningWeekInfo().start)+"T12:00:00");
+  base.setDate(base.getDate()+7);
+
+  state.shared.planningWeekStart=isoDateLocal(base);
+  state.shared.lockedWeek=null;
+  state.generatedMealIds=[];
+  state.discoveryId=null;
+  setActiveDiscovery(null);
+  state.shared.shoppingChecks={};
+  await saveSharedAppState();
+  save();
+  renderAll();
+}
+
+function renderWeekPlanning(){
+  const info=currentPlanningWeekInfo();
+  const label=document.getElementById("planningWeekLabel");
+  const banner=document.getElementById("lockedWeekBanner");
+  const lockBtn=document.getElementById("lockWeekBtn");
+  const unlockBtn=document.getElementById("unlockWeekBtn");
+  const newWeekBtn=document.getElementById("newWeekBtn");
+  const locked=isPlanLocked();
+
+  if(label) label.textContent=info.label;
+  if(lockBtn){
+    lockBtn.style.display=locked?"none":"inline-flex";
+    lockBtn.disabled=!state.generatedMealIds.length;
+  }
+  if(unlockBtn) unlockBtn.style.display=locked?"inline-flex":"none";
+  if(newWeekBtn) newWeekBtn.style.display=locked?"inline-flex":"none";
+
+  if(banner){
+    banner.classList.toggle("show",locked);
+    banner.innerHTML=locked
+      ? `<span>🔒 <strong>${escapeHtml(state.shared.lockedWeek.label||info.label)}</strong> validée. La planification est bloquée.</span><span>${state.shared.lockedWeek.meals.length} repas</span>`
+      : "";
+  }
+
+  peopleEl.disabled=locked;
+  mealCountEl.disabled=locked;
+  const discovery=document.getElementById("prefDiscovery");
+  if(discovery) discovery.disabled=locked;
+  const generate=document.getElementById("generateBtn");
+  if(generate && !generate.dataset.loading){
+    generate.disabled=locked;
+    if(locked) generate.textContent="🔒 Semaine validée";
+    else generate.textContent="✨ Générer mes repas";
+  }
+}
+
+function renderWeekHistory(){
+  const el=document.getElementById("weekHistory");
+  if(!el) return;
+  const history=(state.shared.weekHistory||[]).slice(0,5);
+  if(!history.length){
+    el.innerHTML='<div class="history-empty">Aucune semaine bloquée pour le moment.</div>';
+    return;
+  }
+
+  el.innerHTML=history.map(week=>`
+    <article class="history-card">
+      <h4>🔒 ${escapeHtml(week.label||week.weekKey||"Semaine")}</h4>
+      <div class="history-meals">
+        ${(week.meals||[]).map((meal,index)=>{
+          const label=`${index+1}. ${escapeHtml(meal.name||"Repas")}`;
+          return meal.sourceUrl
+            ? `<a href="${escapeHtml(meal.sourceUrl)}" target="_blank" rel="noopener noreferrer">${label}</a>`
+            : `<span>${label}</span>`;
+        }).join("")}
+      </div>
+    </article>
+  `).join("");
+}
+
 async function generateMeals(){
+  if(isPlanLocked()){
+    alert("Cette semaine est bloquée. Utilise « Modifier cette semaine » ou « Nouvelle semaine » avant de générer un nouveau menu.");
+    return;
+  }
   const saved = cloudRecipes.slice().sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
-  const eligibleSaved = saved.filter(recipeAllowed);
+  const eligibleSaved = saved.filter(recipeAllowed).filter(recipe=>!wasInPreviousWeek(recipe));
   const chosen=[];
   const used=new Set();
   const discoveryEnabled=state.shared.preferences.discovery !== false;
@@ -1510,7 +1813,7 @@ async function generateMeals(){
   }
 
   if(savedTarget>0 && !eligibleSaved.length){
-    alert("Aucune recette de ta bibliothèque ne correspond aux filtres actuels. Modifie tes préférences ou ajoute des recettes compatibles.");
+    alert("Aucune recette disponible ne correspond aux filtres après exclusion des repas de la semaine précédente. Modifie tes préférences ou ajoute des recettes compatibles.");
     return;
   }
 
@@ -1567,7 +1870,7 @@ async function generateMeals(){
   }
 }
 function calculateReuse(){
-  const chosen=state.generatedMealIds.map(recipeById).filter(Boolean);
+  const chosen=currentPlanRecipes();
   if(chosen.length<2) return {score:0,reused:[],totalUnique:chosen.length?ingredientKeys(chosen[0]).length:0};
   const counts={};
   chosen.forEach(recipe=>ingredientKeys(recipe).forEach(key=>counts[key]=(counts[key]||0)+1));
@@ -1581,25 +1884,21 @@ function formatQty(qty,unit){const rounded=Math.round(qty*10)/10;return `${round
 function shoppingData(){
   const grouped={};
   const available=new Set(state.shared.pantry.map(canonicalIngredient));
-  state.generatedMealIds.map(recipeById).filter(Boolean).forEach(recipe=>{
+  currentPlanRecipes().forEach(recipe=>{
     recipe.ingredients.forEach(([name,qty,unit,category])=>{
       const canonical=canonicalIngredient(name);
       if(available.has(canonical)) return;
       const key=`${canonical}|${unit}`;
       if(!grouped[category]) grouped[category]={};
       if(!grouped[category][key]) grouped[category][key]={name,qty:0,unit,key};
-      grouped[category][key].qty += qty*state.people;
+      grouped[category][key].qty += qty*currentPlanPeople();
     });
   });
   return grouped;
 }
 
 function sharedIngredientsFor(recipe){
-  const others=state.generatedMealIds
-    .filter(id=>id!==recipe.id)
-    .map(recipeById)
-    .filter(Boolean);
-
+  const others=currentPlanRecipes().filter(other=>other!==recipe && other.id!==recipe.id);
   const otherKeys=new Set(
     others.flatMap(r=>r.ingredients.map(i=>canonicalIngredient(i[0])))
   );
@@ -1612,7 +1911,8 @@ function sharedIngredientsFor(recipe){
 
 function renderMeals(){
   const el=document.getElementById("mealList");
-  const chosen=state.generatedMealIds.map(recipeById).filter(Boolean);
+  const locked=isPlanLocked();
+  const chosen=currentPlanRecipes();
   const savedRecipes=cloudRecipes
     .slice()
     .sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
@@ -1623,25 +1923,25 @@ function renderMeals(){
   }
 
   el.innerHTML=chosen.map((recipe,index)=>{
-    const isNew=state.discoveryId===recipe.id;
+    const isNew=locked ? !!recipe.isDiscovery : state.discoveryId===recipe.id;
     const shared=sharedIngredientsFor(recipe);
     const pantryMatches=isNew ? [...new Set(pantryMatchesForRecipe(recipe))] : [];
 
-    const librarySelector = !isNew ? `
+    const librarySelector = !locked && !isNew ? `
       <div class="meal-actions">
         <select class="meal-select" data-replace-index="${index}">
           ${savedRecipes.map(r=>`<option value="${r.id}" ${r.id===recipe.id?"selected":""}>${r.name}</option>`).join("")}
         </select>
       </div>` : "";
 
-    const discoveryActions = isNew ? `
+    const discoveryActions = isNew && !locked ? `
       <div class="meal-actions">
         <button class="btn btn-soft" style="flex:1" data-change-discovery="1">↻ Chercher une autre recette</button>
         <button class="btn btn-primary" style="flex:1" data-validate="${recipe.id}">✓ Valider et ajouter</button>
       </div>` : "";
 
     return `
-      <article class="meal-card ${isNew?"new":""}">
+      <article class="meal-card ${isNew?"new":""} ${locked?"locked-card":""}">
         <div class="meal-main">
           <div class="emoji">${recipe.emoji}</div>
           <div>
@@ -1752,6 +2052,7 @@ async function confirmLeftoversSelection(){
 }
 
 function replaceKnownMeal(index,newId){
+  if(isPlanLocked()) return;
   const newRecipe = recipeById(newId);
   if(!newRecipe) return;
 
@@ -1761,6 +2062,7 @@ function replaceKnownMeal(index,newId){
 }
 
 async function changeDiscovery(){
+  if(isPlanLocked()) return;
   const discoveryIndex = state.generatedMealIds.findIndex(id => id === state.discoveryId);
 
   if(discoveryIndex === -1){
@@ -1875,7 +2177,8 @@ function renderShopping(){
   const el=document.getElementById("shoppingList");
   const grouped=shoppingData();
   const categories=Object.keys(grouped);
-  document.getElementById("shoppingPeople").textContent=`${state.people} personne${state.people>1?"s":""}`;
+  const planPeople=currentPlanPeople();
+  document.getElementById("shoppingPeople").textContent=`${planPeople} personne${planPeople>1?"s":""}`;
   if(!categories.length){
     el.innerHTML=`<div class="empty" style="padding:18px">${state.generatedMealIds.length ? "Tout est déjà dans « Ce que j’ai déjà » 🎉" : "La liste de courses apparaîtra après génération."}</div>`;
     return;
@@ -1903,7 +2206,7 @@ function renderReuse(){
   document.getElementById("reuseScore").textContent=r.score+"%";
   document.getElementById("reuseBar").style.width=r.score+"%";
   const detail=document.getElementById("reuseDetail");
-  if(!state.generatedMealIds.length) detail.textContent="Génère un menu pour voir le score.";
+  if(!currentPlanRecipes().length) detail.textContent="Génère un menu pour voir le score.";
   else if(r.reused.length) detail.textContent=`${r.reused.length} ingrédients sont partagés entre plusieurs repas · ${r.totalUnique} ingrédients différents au total.`;
   else detail.textContent="Cette génération partage peu d'ingrédients.";
 }
@@ -2053,7 +2356,16 @@ async function removeAvailableItem(source,name){
   renderAll();
 }
 async function clearShoppingChecks(){state.shared.shoppingChecks={};await saveSharedAppState();renderShopping();}
-async function updatePreference(key,value){state.shared.preferences[key]=value;state.generatedMealIds=[];state.discoveryId=null;setActiveDiscovery(null);await saveSharedAppState();renderAll();}
+async function updatePreference(key,value){
+  state.shared.preferences[key]=value;
+  if(!isPlanLocked()){
+    state.generatedMealIds=[];
+    state.discoveryId=null;
+    setActiveDiscovery(null);
+  }
+  await saveSharedAppState();
+  renderAll();
+}
 
 function renderAll(){
   peopleEl.value=state.people;
@@ -2063,11 +2375,17 @@ function renderAll(){
   renderReuse();
   renderLibrary();
   renderSettings();
+  renderWeekPlanning();
+  renderWeekHistory();
 }
 
 document.querySelectorAll(".tab-btn").forEach(btn=>btn.addEventListener("click",()=>switchTab(btn.dataset.tab)));
-peopleEl.addEventListener("change",e=>{state.people=Number(e.target.value);save();renderShopping();});
+peopleEl.addEventListener("change",e=>{
+  if(isPlanLocked()){renderAll();return;}
+  state.people=Number(e.target.value);save();renderShopping();
+});
 mealCountEl.addEventListener("change",e=>{
+  if(isPlanLocked()){renderAll();return;}
   state.mealCount=Number(e.target.value);
   state.generatedMealIds=[];
   state.discoveryId=null;
@@ -2083,6 +2401,9 @@ document.getElementById("leftoversModal").addEventListener("click",e=>{
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape" && document.getElementById("leftoversModal").classList.contains("open")) closeLeftoversModal();
 });
+document.getElementById("lockWeekBtn").addEventListener("click",lockCurrentWeek);
+document.getElementById("unlockWeekBtn").addEventListener("click",unlockCurrentWeek);
+document.getElementById("newWeekBtn").addEventListener("click",startNewWeek);
 document.getElementById("generateBtn").addEventListener("click",generateMeals);
 document.getElementById("addManualRecipeBtn").addEventListener("click",addManualRecipe);
 document.getElementById("analyzeRecipeUrlBtn").addEventListener("click",analyzeRecipeUrl);
