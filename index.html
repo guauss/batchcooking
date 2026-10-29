@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PoPot V0.11</title>
+<title>PoPot V0.12</title>
 <!-- v5: liste unique "Ce que j’ai déjà" -->
 <style>
 :root{--bg:#f6f7f4;--card:#fff;--text:#1d241f;--muted:#6f776f;--line:#e4e8e2;--accent:#1f7a4c;--soft:#e7f4ec;--warm:#fff6e8;--shadow:0 10px 30px rgba(30,50,38,.08);--radius:22px}
@@ -172,12 +172,108 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 @media(max-width:900px){.compact-grid{grid-template-columns:1fr 1fr 90px}.compact-url{grid-column:1/-1}.compact-text{grid-column:span 3}.compact-submit{grid-column:1/-1}}
 @media(max-width:700px){.compact-grid{grid-template-columns:1fr 84px}.compact-url,.compact-text,.compact-submit{grid-column:1/-1}.compact-grid>div:nth-child(2){grid-column:1/-1}.compact-grid>div:nth-child(4){grid-column:1/-1}.compact-form-head{align-items:flex-start;flex-direction:column}.compact-form-head .form-status{text-align:left}}
 
+
+
+/* ===== V0.12 - UX compact ===== */
+:root{--radius:18px;--shadow:0 6px 20px rgba(30,50,38,.06)}
+body{font-size:14px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.app{max-width:1440px;padding:16px}
+.panel,.hero-card,.smart-card{border-radius:18px;padding:18px}
+.eyebrow{font-size:12px;font-weight:850;letter-spacing:.07em}
+.btn{border-radius:13px;padding:10px 14px;font-size:13px;font-weight:800}
+
+/* Bandeau de départ compact : planification / préférences / ce que j'ai déjà */
+.planner-start-grid{display:grid;grid-template-columns:minmax(430px,1.1fr) minmax(180px,.42fr) minmax(360px,1fr);gap:14px;margin:16px 0 18px;align-items:stretch}
+.planner-start-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px;box-shadow:var(--shadow);min-width:0}
+.planner-start-card .eyebrow{margin-bottom:9px}
+.plan-compact-body{display:grid;grid-template-columns:minmax(190px,1fr) minmax(155px,.72fr);gap:12px;align-items:stretch}
+.plan-options-box{background:#f2f5f1;border-radius:15px;padding:11px 13px;display:grid;gap:7px}
+.plan-options-title{font-size:10px;color:var(--muted);font-weight:850;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1px}
+.plan-option-row{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;cursor:pointer;line-height:1.15}
+.plan-option-row input{width:17px;height:17px;margin:0;flex:0 0 auto}
+.plan-counts{display:grid;grid-template-columns:1fr;gap:8px;align-content:start}
+.plan-count-control{background:#f2f5f1;border-radius:14px;padding:9px 11px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.plan-count-control label{font-size:10px;color:var(--muted);font-weight:850;text-transform:uppercase;letter-spacing:.05em;margin:0}
+.plan-count-control select{border:0;background:transparent;font-weight:900;color:var(--text);font-size:18px;min-width:42px;outline:none}
+.plan-generate{width:100%;min-height:44px;margin-top:1px}
+.preferences-compact .pref-list{gap:9px;margin-top:4px}
+.preferences-compact .pref-item{font-size:13px;white-space:nowrap}
+.preferences-compact .pref-item input{width:17px;height:17px}
+.pantry-compact p{font-size:11px!important;margin:0 0 7px!important}
+.pantry-compact textarea{width:100%;min-height:82px;max-height:105px;border:1px solid var(--line);border-radius:13px;padding:11px;font:inherit;resize:vertical;background:#fff;color:var(--text)}
+.pantry-compact .smart-actions{margin-top:8px}
+
+/* Colonne droite : mutualisation + courses */
+.side-stack{display:grid;gap:14px;align-self:start;position:sticky;top:16px}
+.side-stack .shopping{position:static}
+.reuse-panel .score{font-size:38px;margin:3px 0 5px}
+.reuse-panel .bar{height:10px;margin-top:8px}
+.reuse-panel>div:not(.eyebrow):not(.score):not(.bar){font-size:13px}
+
+/* Zone repas proposée - style plus léger */
+.planning-layout{grid-template-columns:minmax(0,1fr) 360px;gap:16px}
+.planning-main{gap:16px}
+.planning-main>.panel{padding:18px}
+.plan-head{align-items:center}
+.plan-head .eyebrow{margin:0}
+.week-label{font-size:11px;margin-top:4px}
+.plan-lock-actions .btn{padding:10px 16px}
+.prep-plan-summary.good{display:none!important}
+.prep-plan-summary.warn{margin-top:10px}
+.meal-list{gap:12px;margin-top:14px}
+.meal-card{border:1px solid var(--line);border-radius:17px;padding:13px 14px;background:#fff;box-shadow:none;min-width:0}
+.meal-card.new{background:#fffaf2;border-color:#ead8b0}
+.meal-title-static,.meal-card .meal-select{width:100%;min-height:50px;border:1px solid #dde3dc;border-radius:14px;background:#fff;color:var(--text);font-weight:850;font-size:15px;padding:12px 14px;display:flex;align-items:center;line-height:1.25}
+.meal-card .meal-select{appearance:auto;cursor:pointer}
+.meal-title-static.discovery{background:#fffaf2;border-color:#ead8b0}
+.meal-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:9px;font-size:12px}
+.meal-meta .recipe-link,.meal-meta .mini-btn{margin-top:0}
+.meal-meta-time{color:var(--muted);display:inline-flex;align-items:center;gap:4px}
+.meal-card .prep-badge{margin:0}
+.meal-card>.meal-actions{margin-top:10px}
+.meal-card .discovery-actions{margin-top:10px}
+.meal-card .discovery-actions .btn{font-size:12px;padding:8px 10px}
+
+/* Sucré et courses : un peu plus compacts */
+.sweet-panel{padding:17px 18px}.sweet-list{gap:10px;margin-top:12px}
+.shopping{padding:18px}.shopping-tools{margin-top:8px}
+
+@media(max-width:1120px){
+  .planner-start-grid{grid-template-columns:minmax(380px,1fr) minmax(180px,.45fr)}
+  .pantry-compact{grid-column:1/-1}
+}
+@media(max-width:1000px){
+  .planning-layout{grid-template-columns:1fr}
+  .side-stack{position:static;order:2}
+  .planning-main{order:1}
+}
+@media(max-width:760px){
+  .app{padding:10px}
+  .planner-start-grid{grid-template-columns:1fr;gap:10px;margin:12px 0 14px}
+  .pantry-compact{grid-column:auto}
+  .planner-start-card{padding:14px}
+  .plan-compact-body{grid-template-columns:1fr 132px;gap:9px}
+  .plan-options-box{padding:10px}
+  .plan-option-row{font-size:13px}
+  .plan-count-control{padding:8px 9px}
+  .plan-count-control select{font-size:16px}
+  .meal-list{grid-template-columns:1fr}
+  .meal-card{padding:11px}
+  .meal-title-static,.meal-card .meal-select{font-size:14px;min-height:46px;padding:10px 12px}
+  .plan-lock-actions{width:100%}.plan-lock-actions .btn{flex:1}
+}
+@media(max-width:430px){
+  .plan-compact-body{grid-template-columns:1fr}
+  .plan-counts{grid-template-columns:1fr 1fr}
+  .plan-generate{grid-column:1/-1}
+}
+
 </style>
 </head>
 <body>
 <div class="app">
 <header class="topbar">
-  <div class="brand"><div class="logo">M</div><div><div style="display:flex;align-items:center;gap:7px"><h1>PoPot</h1><span class="version-badge">V0.11</span></div><p>La semaine est prête.</p></div></div>
+  <div class="brand"><div class="logo">M</div><div><div style="display:flex;align-items:center;gap:7px"><h1>PoPot</h1><span class="version-badge">V0.12</span></div><p>La semaine est prête.</p></div></div>
   <div class="tabs">
     <button class="tab-btn active" data-tab="planner">🍽️ Planification</button>
     <button class="tab-btn" data-tab="library">📚 Mes recettes</button>
@@ -206,45 +302,41 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 </section>
 
 <section id="planner" class="tab-panel active">
-  <div class="hero">
-    <div class="hero-card">
+  <div class="planner-start-grid">
+    <section class="planner-start-card planning-compact">
       <div class="eyebrow">Planification automatique</div>
-                  <div class="controls">
-        <div class="control"><label>Personnes</label><select id="people"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
-        <div class="control"><label>Repas</label><select id="mealCount"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option></select></div>
-        <label class="control discovery-option" for="prefOven"><span style="display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em">Option</span><span style="display:flex;align-items:center;gap:8px;font-weight:800"><input type="checkbox" id="prefOven"> 🔥 Four</span><span class="plan-option-note">Au moins 2 recettes</span></label>
-        <label class="control discovery-option" for="prefComplex"><span style="display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em">Option</span><span style="display:flex;align-items:center;gap:8px;font-weight:800"><input type="checkbox" id="prefComplex"> 🧑‍🍳 Complexe</span><span class="plan-option-note">1 recette</span></label>
-        <label class="control discovery-option" for="prefCompanion"><span style="display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em">Option</span><span style="display:flex;align-items:center;gap:8px;font-weight:800"><input type="checkbox" id="prefCompanion"> 🤖 Compagnon</span><span class="plan-option-note">1 recette</span></label>
-        <label class="control discovery-option" for="prefDiscovery"><span style="display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em">Option</span><span style="display:flex;align-items:center;gap:8px;font-weight:800"><input type="checkbox" id="prefDiscovery"> 🌐 Découverte</span><span class="plan-option-note">Dernier repas si possible</span></label>
-        <button class="btn btn-primary" id="generateBtn">✨ Générer mes repas</button>
+      <div class="plan-compact-body">
+        <div class="plan-options-box">
+          <div class="plan-options-title">Options</div>
+          <label class="plan-option-row" for="prefOven"><input type="checkbox" id="prefOven"> 🔥 Four</label>
+          <label class="plan-option-row" for="prefCompanion"><input type="checkbox" id="prefCompanion"> 🤖 Compagnon</label>
+          <label class="plan-option-row" for="prefComplex"><input type="checkbox" id="prefComplex"> 🧑‍🍳 Complexe</label>
+          <label class="plan-option-row" for="prefDiscovery"><input type="checkbox" id="prefDiscovery"> 🌐 Découverte</label>
+        </div>
+        <div class="plan-counts">
+          <div class="plan-count-control"><select id="people"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select><label>Personnes</label></div>
+          <div class="plan-count-control"><select id="mealCount"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option></select><label>Repas</label></div>
+          <button class="btn btn-primary plan-generate" id="generateBtn">✨ Générer mes repas</button>
+        </div>
       </div>
-    </div>
-    <div class="hero-card">
-      <div class="eyebrow">Mutualisation</div>
-      <div class="score" id="reuseScore">0%</div>
-      <div>Ingrédients réutilisés entre plusieurs repas</div>
-      <div class="bar"><div id="reuseBar"></div></div>
-      <p class="muted" id="reuseDetail" style="font-size:12px;margin-bottom:0">Génère un menu pour voir le score.</p>
-    </div>
-  </div>
-
-  <div class="smart-grid">
-    <section class="smart-card">
-      <div class="eyebrow">🏠 Ce que j’ai déjà</div>
-      <p class="muted" style="font-size:12px;margin:0 0 8px">PoPot utilise ce que tu as déjà chez toi pour planifier la semaine.</p>
-      <textarea id="pantryInput" placeholder="Ex. riz, pâtes, oignons, œufs"></textarea>
-      <div class="smart-actions"><button class="btn btn-soft" id="savePantryBtn">Enregistrer</button></div>
     </section>
 
-    <section class="smart-card">
+    <section class="planner-start-card preferences-compact">
       <div class="eyebrow">Préférences</div>
       <div class="pref-list">
         <label class="pref-item"><input type="checkbox" id="prefVegetarian"> Végétarien</label>
         <label class="pref-item"><input type="checkbox" id="prefNoPork"> Sans porc</label>
         <label class="pref-item"><input type="checkbox" id="prefNoFish"> Sans poisson</label>
-        <label class="pref-item"><input type="checkbox" id="prefQuick"> Rapide (30 min max)</label>
-        <label class="pref-item"><input type="checkbox" id="prefKids"> Plutôt adapté aux enfants</label>
+        <label class="pref-item"><input type="checkbox" id="prefQuick"> Rapide</label>
+        <label class="pref-item"><input type="checkbox" id="prefKids"> Enfants</label>
       </div>
+    </section>
+
+    <section class="planner-start-card pantry-compact">
+      <div class="eyebrow">🏠 Ce que j’ai déjà</div>
+      <p class="muted">PoPot utilise ce que tu as déjà chez toi pour planifier la semaine.</p>
+      <textarea id="pantryInput" placeholder="Ex. riz, pâtes, oignons, œufs"></textarea>
+      <div class="smart-actions"><button class="btn btn-soft" id="savePantryBtn">Enregistrer</button></div>
     </section>
   </div>
 
@@ -254,7 +346,6 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
         <div class="plan-head">
           <div>
             <p class="eyebrow">Repas proposés</p>
-            <p class="muted" style="font-size:12px;margin:5px 0 0">La sélection privilégie les recettes ayant le plus d'ingrédients en commun et évite les repas de la semaine précédente.</p>
             <div class="week-label" id="planningWeekLabel"></div>
           </div>
           <div class="plan-lock-actions">
@@ -280,14 +371,23 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
       </section>
     </div>
 
-    <aside class="panel shopping">
-      <p class="eyebrow">🛒 Liste de courses</p>
-      <p class="muted" style="font-size:12px">Quantités pour <strong id="shoppingPeople">4 personnes</strong>.</p>
-      <div class="shopping-tools">
-        <button class="mini-btn" id="shareKeepBtn">📌 Envoyer vers Google Keep</button>
-        <button class="mini-btn" id="clearShoppingChecksBtn">Tout décocher</button>
-      </div>
-      <div id="shoppingList"></div>
+    <aside class="side-stack">
+      <section class="panel reuse-panel">
+        <div class="eyebrow">Mutualisation</div>
+        <div class="score" id="reuseScore">0%</div>
+        <div>Ingrédients réutilisés entre plusieurs repas</div>
+        <div class="bar"><div id="reuseBar"></div></div>
+        <p class="muted" id="reuseDetail" style="font-size:11px;margin:8px 0 0">Génère un menu pour voir le score.</p>
+      </section>
+      <section class="panel shopping">
+        <p class="eyebrow">🛒 Liste de courses</p>
+        <p class="muted" style="font-size:12px">Quantités pour <strong id="shoppingPeople">4 personnes</strong>.</p>
+        <div class="shopping-tools">
+          <button class="mini-btn" id="shareKeepBtn">📌 Envoyer vers Google Keep</button>
+          <button class="mini-btn" id="clearShoppingChecksBtn">Tout décocher</button>
+        </div>
+        <div id="shoppingList"></div>
+      </section>
     </aside>
   </div>
 
@@ -533,7 +633,7 @@ function mergeSharedState(value){
   const incomingPreferences = incoming.preferences && typeof incoming.preferences === "object" ? incoming.preferences : {};
   const preferences = {...DEFAULT_SHARED_STATE.preferences,...incomingPreferences};
 
-  // Migration v10/v10b vers V0.11.
+  // Migration v10/v10b vers V0.11/V0.12.
   if(typeof incomingPreferences.ovenPlanning!=="boolean") preferences.ovenPlanning=incomingPreferences.prepStrategy==="oven";
   if(typeof incomingPreferences.companionPlanning!=="boolean") preferences.companionPlanning=!!incomingPreferences.companionPlanning || !!incomingPreferences.monsieurPlanning || incomingPreferences.prepStrategy==="monsieur";
   if(typeof incomingPreferences.complexPlanning!=="boolean") preferences.complexPlanning=false;
@@ -2119,7 +2219,7 @@ function renderPreparationSummary(){
 
 function recipeActionLink(recipe){
   if(recipe.sourceUrl) return `<a class="recipe-link" href="${escapeHtml(recipe.sourceUrl)}" target="_blank" rel="noopener noreferrer">🔗 Ouvrir la source ↗</a>`;
-  return `<button class="mini-btn" type="button" data-view-recipe="${recipe.id}" style="margin-top:12px">📋 Voir la recette</button>`;
+  return `<button class="mini-btn" type="button" data-view-recipe="${recipe.id}">📋 Voir la recette</button>`;
 }
 
 function renderMeals(){
@@ -2131,19 +2231,22 @@ function renderMeals(){
 
   el.innerHTML=chosen.map((recipe,index)=>{
     const isNew=locked?!!recipe.isDiscovery:state.discoveryId===recipe.id;
-    const shared=sharedIngredientsFor(recipe);
-    const pantryMatches=isNew?[...new Set(pantryMatchesForRecipe(recipe))]:[];
-    const librarySelector=!locked&&!isNew?`<div class="meal-actions"><select class="meal-select" data-replace-index="${index}">${savedRecipes.map(r=>`<option value="${r.id}" ${String(r.id)===String(recipe.id)?"selected":""}>${prepTagLabel(r)} · ${escapeHtml(r.name)}</option>`).join("")}</select></div>`:"";
-    const discoveryActions=isNew&&!locked?`<div class="meal-actions"><button class="btn btn-soft" style="flex:1" data-change-discovery="1">↻ Chercher une autre recette</button><button class="btn btn-primary" style="flex:1" data-validate="${recipe.id}">✓ Valider et ajouter</button></div>`:"";
+    const selector=!locked&&!isNew
+      ? `<select class="meal-select" data-replace-index="${index}">${savedRecipes.map(r=>`<option value="${r.id}" ${String(r.id)===String(recipe.id)?"selected":""}>${prepTagLabel(r)} · ${escapeHtml(r.name)}</option>`).join("")}</select>`
+      : `<div class="meal-title-static ${isNew?"discovery":""}">${isNew?"🌐 Découverte":""}${isNew?" · ":prepTagLabel(recipe)+" · "}${escapeHtml(recipe.name)}</div>`;
+
+    const discoveryActions=isNew&&!locked
+      ? `<div class="meal-actions discovery-actions"><button class="btn btn-soft" style="flex:1" data-change-discovery="1">↻ Autre recette</button><button class="btn btn-primary" style="flex:1" data-validate="${recipe.id}">✓ Ajouter</button></div>`
+      : "";
+
     return `<article class="meal-card ${isNew?"new":""} ${locked?"locked-card":""}">
-      <div class="meal-main"><div class="emoji">${recipe.emoji}</div><div>
-        <span class="badge ${isNew?"badge-new web-badge":""}">${isNew?(recipe.sourceSite?"🇫🇷 Découverte · "+recipe.sourceSite:"🌐 Découverte web"):"📚 Ma bibliothèque"}</span>
-        ${!isNew?`<span class="prep-badge">${prepTagLabel(recipe)}</span>`:""}
-        <h4>Repas ${index+1} · ${escapeHtml(recipe.name)}</h4><p>⏱️ ${recipe.time} min</p>
-      </div></div>
-      ${isNew&&pantryMatches.length?`<div class="shared">🏠 Déjà chez toi : ${pantryMatches.slice(0,6).join(", ")}</div>`:""}
-      <div class="shared">${shared.length?"♻️ Mutualisés : "+shared.slice(0,5).join(", "):"Peu d'ingrédients partagés avec les autres repas"}</div>
-      ${recipeActionLink(recipe)}${librarySelector}${discoveryActions}
+      ${selector}
+      <div class="meal-meta">
+        ${recipeActionLink(recipe)}
+        ${!isNew?`<span class="prep-badge">${prepTagLabel(recipe)}</span>`:`<span class="prep-badge">🌐 Découverte</span>`}
+        <span class="meal-meta-time">⏱️ ${recipe.time} min</span>
+      </div>
+      ${discoveryActions}
       <div class="meal-actions"><button class="mini-btn" data-leftovers-recipe="${recipe.id}">♻️ J’ai des restes</button></div>
     </article>`;
   }).join("");
