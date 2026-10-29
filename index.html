@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PoPot</title>
+<title>PoPot V0.11</title>
 <!-- v5: liste unique "Ce que j’ai déjà" -->
 <style>
 :root{--bg:#f6f7f4;--card:#fff;--text:#1d241f;--muted:#6f776f;--line:#e4e8e2;--accent:#1f7a4c;--soft:#e7f4ec;--warm:#fff6e8;--shadow:0 10px 30px rgba(30,50,38,.08);--radius:22px}
@@ -116,12 +116,68 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
 .complexity-badge{display:inline-flex;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900;margin-top:7px;background:#eef2ee;color:#667066}
 .complexity-badge.elaborate{background:#fff0d8;color:#9a611e}
 
+.recipe-prep-row{margin-top:10px}.recipe-prep-select,.add-recipe-box select{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;color:var(--text);font:inherit;font-weight:700}
+.prep-badge{display:inline-flex;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900;margin-top:7px;margin-left:5px;background:#eef2ee;color:#667066}.prep-badge.oven{background:#fff0d8;color:#9a611e}.prep-badge.monsieur{background:#e8f1ff;color:#315d8a}
+.prep-plan-summary{display:none;margin:12px 0 0;padding:10px 12px;border-radius:14px;background:#f4f7f3;color:#4d594f;font-size:12px;font-weight:750;border:1px solid var(--line)}.prep-plan-summary.show{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.prep-plan-summary.warn{background:#fff6e8;color:#8a5a1f;border-color:#efd7aa}.prep-plan-summary.good{background:#eef7f1;color:#315a40;border-color:#cee4d6}
+.prep-hint{font-size:11px;color:var(--muted);margin-top:6px}.prep-hint.monsieur{color:#315d8a;font-weight:700}
+
+
+.version-badge{display:inline-flex;align-items:center;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);border-radius:999px;padding:4px 8px;font-size:10px;font-weight:900;margin-left:4px}
+.recipe-board{display:grid;grid-template-columns:repeat(5,minmax(235px,1fr));gap:12px;overflow-x:auto;padding:2px 2px 14px;align-items:start}
+.recipe-column{background:#f3f6f2;border:1px solid var(--line);border-radius:18px;padding:10px;min-height:220px;transition:.18s}
+.recipe-column.drag-over{outline:2px solid var(--accent);background:#eef7f1}
+.recipe-column-head{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:4px 4px 10px;font-size:13px;font-weight:900;position:sticky;top:0;background:#f3f6f2;z-index:1}
+.recipe-column-count{font-size:10px;color:var(--muted);background:white;border:1px solid var(--line);padding:3px 7px;border-radius:999px}
+.recipe-column-body{display:grid;gap:9px;min-height:155px}
+.recipe-card-mini{background:#fff;border:1px solid var(--line);border-radius:14px;padding:11px;box-shadow:0 5px 14px rgba(30,50,38,.05);cursor:grab;user-select:none;touch-action:pan-y}
+.recipe-card-mini.dragging{opacity:.5;transform:scale(.98)}
+.recipe-card-mini.blocked{opacity:.55}
+.recipe-card-mini h4{margin:0 0 5px;font-size:13px;line-height:1.25}
+.recipe-card-mini .ingredient-mini{font-size:10px;min-height:28px}
+.recipe-card-mini .library-tools{margin-top:8px}
+.recipe-card-mini .rating-row{margin-top:7px}.recipe-card-mini .star-btn{font-size:16px}
+.board-hint{font-size:11px;color:var(--muted);margin:0 0 12px}
+.sweet-panel{margin-top:22px}.sweet-head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.sweet-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+.sweet-card{border:1px solid #ead8b0;background:#fffaf0;border-radius:16px;padding:13px}.sweet-card h4{margin:4px 0;font-size:14px}.sweet-card p{margin:0;color:var(--muted);font-size:11px}
+.recipe-detail-modal{position:fixed;inset:0;background:rgba(20,30,24,.48);display:none;align-items:center;justify-content:center;padding:18px;z-index:10000}.recipe-detail-modal.open{display:flex}
+.recipe-detail-dialog{width:min(620px,100%);max-height:88vh;overflow:auto;background:white;border-radius:22px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.24)}
+.recipe-detail-dialog h3{margin:0 0 6px}.recipe-detail-section{margin-top:16px}.recipe-detail-section h4{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent)}
+.recipe-detail-list{margin:0;padding-left:20px;display:grid;gap:6px;font-size:13px;line-height:1.4}.recipe-detail-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+.plan-option-note{font-size:10px;color:var(--muted);margin-top:4px;max-width:150px;line-height:1.25}
+@media(max-width:900px){.sweet-list{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.recipe-board{grid-template-columns:repeat(5,82vw);scroll-snap-type:x proximity}.recipe-column{scroll-snap-align:start}.sweet-list{grid-template-columns:1fr}}
+
+.planning-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:22px;align-items:start}
+.planning-main{display:grid;gap:22px;min-width:0}
+.planning-main .sweet-panel{margin-top:0}
+.sweet-controls{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
+@media(max-width:1000px){.planning-layout{grid-template-columns:1fr}.planning-layout .shopping{position:static;order:2}.planning-main{order:1}}
+
+.compact-recipe-form{padding:12px 14px}
+.compact-form-head{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:22px}
+.compact-form-head .form-status{margin:0;text-align:right}
+.compact-grid{grid-template-columns:minmax(220px,1.3fr) minmax(170px,1fr) 82px minmax(150px,.8fr);gap:8px;margin-top:8px;align-items:end}
+.compact-grid>div{min-width:0}
+.compact-url{grid-column:auto}
+.compact-inline{display:flex;gap:6px;align-items:center}
+.compact-inline input{min-width:0;flex:1}
+.compact-analyze{padding:8px 10px;flex:0 0 auto}
+.compact-recipe-form input,.compact-recipe-form select,.compact-recipe-form textarea{padding:8px 9px;border-radius:10px}
+.compact-recipe-form .form-label{font-size:9px;margin-bottom:3px}
+.compact-text{grid-column:span 2}
+.compact-recipe-form textarea{min-height:56px;max-height:110px}
+.compact-submit{grid-column:1/-1;display:flex;justify-content:flex-end}
+.compact-submit .btn{padding:9px 15px}
+.compact-hidden-hint{display:none}
+@media(max-width:900px){.compact-grid{grid-template-columns:1fr 1fr 90px}.compact-url{grid-column:1/-1}.compact-text{grid-column:span 3}.compact-submit{grid-column:1/-1}}
+@media(max-width:700px){.compact-grid{grid-template-columns:1fr 84px}.compact-url,.compact-text,.compact-submit{grid-column:1/-1}.compact-grid>div:nth-child(2){grid-column:1/-1}.compact-grid>div:nth-child(4){grid-column:1/-1}.compact-form-head{align-items:flex-start;flex-direction:column}.compact-form-head .form-status{text-align:left}}
+
 </style>
 </head>
 <body>
 <div class="app">
 <header class="topbar">
-  <div class="brand"><div class="logo">M</div><div><h1>PoPot</h1><p>La semaine est prête.</p></div></div>
+  <div class="brand"><div class="logo">M</div><div><div style="display:flex;align-items:center;gap:7px"><h1>PoPot</h1><span class="version-badge">V0.11</span></div><p>La semaine est prête.</p></div></div>
   <div class="tabs">
     <button class="tab-btn active" data-tab="planner">🍽️ Planification</button>
     <button class="tab-btn" data-tab="library">📚 Mes recettes</button>
@@ -153,11 +209,13 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
   <div class="hero">
     <div class="hero-card">
       <div class="eyebrow">Planification automatique</div>
-      <p class="muted" style="font-size:12px;margin:0 0 8px">Indique le nombre de personne et de repas. PoPot fait le reste.</p>
-      <div class="controls">
+                  <div class="controls">
         <div class="control"><label>Personnes</label><select id="people"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
         <div class="control"><label>Repas</label><select id="mealCount"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option></select></div>
-        <label class="control discovery-option" for="prefDiscovery"><span style="display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em">Découverte</span><span style="display:flex;align-items:center;gap:8px;font-weight:800"><input type="checkbox" id="prefDiscovery"> 🌐 Recette découverte</span></label>
+        <label class="control discovery-option" for="prefOven"><span style="display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em">Option</span><span style="display:flex;align-items:center;gap:8px;font-weight:800"><input type="checkbox" id="prefOven"> 🔥 Four</span><span class="plan-option-note">Au moins 2 recettes</span></label>
+        <label class="control discovery-option" for="prefComplex"><span style="display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em">Option</span><span style="display:flex;align-items:center;gap:8px;font-weight:800"><input type="checkbox" id="prefComplex"> 🧑‍🍳 Complexe</span><span class="plan-option-note">1 recette</span></label>
+        <label class="control discovery-option" for="prefCompanion"><span style="display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em">Option</span><span style="display:flex;align-items:center;gap:8px;font-weight:800"><input type="checkbox" id="prefCompanion"> 🤖 Compagnon</span><span class="plan-option-note">1 recette</span></label>
+        <label class="control discovery-option" for="prefDiscovery"><span style="display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em">Option</span><span style="display:flex;align-items:center;gap:8px;font-weight:800"><input type="checkbox" id="prefDiscovery"> 🌐 Découverte</span><span class="plan-option-note">Dernier repas si possible</span></label>
         <button class="btn btn-primary" id="generateBtn">✨ Générer mes repas</button>
       </div>
     </div>
@@ -190,23 +248,38 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
     </section>
   </div>
 
-  <div class="layout">
-    <main class="panel">
-      <div class="plan-head">
-        <div>
-          <p class="eyebrow">Repas proposés</p>
-          <p class="muted" style="font-size:12px;margin:5px 0 0">La sélection privilégie les recettes ayant le plus d'ingrédients en commun et évite les repas de la semaine précédente.</p>
-          <div class="week-label" id="planningWeekLabel"></div>
+  <div class="planning-layout">
+    <div class="planning-main">
+      <main class="panel">
+        <div class="plan-head">
+          <div>
+            <p class="eyebrow">Repas proposés</p>
+            <p class="muted" style="font-size:12px;margin:5px 0 0">La sélection privilégie les recettes ayant le plus d'ingrédients en commun et évite les repas de la semaine précédente.</p>
+            <div class="week-label" id="planningWeekLabel"></div>
+          </div>
+          <div class="plan-lock-actions">
+            <button class="btn btn-primary" id="lockWeekBtn">🔒 Valider et bloquer la semaine</button>
+            <button class="btn btn-soft" id="unlockWeekBtn" style="display:none">🔓 Modifier cette semaine</button>
+            <button class="btn btn-outline" id="newWeekBtn" style="display:none">＋ Nouvelle semaine</button>
+          </div>
         </div>
-        <div class="plan-lock-actions">
-          <button class="btn btn-primary" id="lockWeekBtn">🔒 Valider et bloquer la semaine</button>
-          <button class="btn btn-soft" id="unlockWeekBtn" style="display:none">🔓 Modifier cette semaine</button>
-          <button class="btn btn-outline" id="newWeekBtn" style="display:none">＋ Nouvelle semaine</button>
+        <div class="lock-banner" id="lockedWeekBanner"></div>
+        <div class="prep-plan-summary" id="prepPlanSummary"></div>
+        <div id="mealList" class="meal-list"></div>
+      </main>
+
+      <section class="panel sweet-panel">
+        <div class="sweet-head">
+          <div><div class="eyebrow">En plus des repas</div><h3 style="margin-top:6px">🍰 Recettes sucrées</h3></div>
+          <div class="sweet-controls">
+            <div class="control"><label>Sucrés</label><select id="sweetCount"><option selected>0</option><option>1</option><option>2</option><option>3</option></select></div>
+            <div class="control"><label>Planifiées</label><strong id="sweetPlannedCount">0</strong></div>
+          </div>
         </div>
-      </div>
-      <div class="lock-banner" id="lockedWeekBanner"></div>
-      <div id="mealList" class="meal-list"></div>
-    </main>
+        <div id="sweetMealList" class="sweet-list"></div>
+      </section>
+    </div>
+
     <aside class="panel shopping">
       <p class="eyebrow">🛒 Liste de courses</p>
       <p class="muted" style="font-size:12px">Quantités pour <strong id="shoppingPeople">4 personnes</strong>.</p>
@@ -221,51 +294,65 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
   <section class="panel history-panel">
     <div class="eyebrow">Historique</div>
     <h3 style="margin-top:6px">🗓️ 3 dernières semaines</h3>
-    <p class="muted" style="font-size:12px;margin:5px 0 0">Les repas d'une semaine bloquée sont mémorisés et ne sont pas reproposés la semaine suivante.</p>
+    <p class="muted" style="font-size:12px;margin:5px 0 0">Les 3 dernières semaines servent à diminuer la priorité des recettes déjà utilisées, sans les interdire.</p>
     <div id="weekHistory" class="history-grid"></div>
   </section>
 </section>
 
 <section id="library" class="tab-panel">
   <div class="library-head">
-    <div><div class="eyebrow">Bibliothèque</div><h2 style="font-size:30px;margin-bottom:6px">Mes recettes</h2><p class="muted" style="margin:0">Base utilisée pour les futures générations. Chaque fiche donne aussi accès à une recette détaillée en ligne.</p></div>
+    <div><div class="eyebrow">Bibliothèque</div><h2 style="font-size:30px;margin-bottom:6px">Mes recettes</h2></div>
     <div class="sync-row">
       <button class="btn btn-soft" id="syncRecipesBtn">↻ Synchroniser</button>
       <div class="control"><label>Recettes enregistrées</label><strong id="libraryCount">0</strong></div>
     </div>
   </div>
-  <div class="add-recipe-box">
-    <div class="eyebrow">Ajouter une recette</div>
-    <h3 style="margin-top:6px">Ajouter depuis un lien web</h3>
-    <p class="muted" style="font-size:12px;margin-bottom:0">Colle le lien de la recette, puis indique les ingrédients principaux pour que l’algorithme anti-gaspillage puisse l’utiliser correctement.</p>
-    <div class="add-recipe-grid">
-      <div class="full import-row">
-        <div>
-          <label class="form-label" for="manualUrl">Lien de la recette</label>
+  <div class="add-recipe-box compact-recipe-form">
+    <div class="compact-form-head">
+      <div class="eyebrow">Ajouter une recette</div>
+      <div id="manualRecipeStatus" class="form-status"></div>
+    </div>
+    <div class="add-recipe-grid compact-grid">
+      <div class="compact-url">
+        <label class="form-label" for="manualUrl">Lien (optionnel)</label>
+        <div class="compact-inline">
           <input id="manualUrl" type="url" placeholder="https://..." />
+          <button class="btn btn-soft compact-analyze" id="analyzeRecipeUrlBtn" type="button">🔎</button>
         </div>
-        <button class="btn btn-soft" id="analyzeRecipeUrlBtn" type="button">🔎 Analyser le lien</button>
       </div>
       <div>
-        <label class="form-label" for="manualName">Nom de la recette</label>
-        <input id="manualName" type="text" placeholder="Ex. Poulet citron & légumes" />
+        <label class="form-label" for="manualName">Nom</label>
+        <input id="manualName" type="text" placeholder="Nom de la recette" />
       </div>
-      <div>
-        <label class="form-label" for="manualTime">Temps (minutes)</label>
+      <div class="compact-time">
+        <label class="form-label" for="manualTime">Min.</label>
         <input id="manualTime" type="number" min="1" max="300" value="30" />
       </div>
-      <div class="full">
-        <label class="form-label" for="manualIngredients">Ingrédients principaux</label>
-        <textarea id="manualIngredients" placeholder="Ex. poulet, citron, pommes de terre, brocoli, ail"></textarea>
-        <div class="form-help">Sépare les ingrédients par des virgules. Ils servent au calcul de mutualisation et à la liste de courses.</div>
+      <div>
+        <label class="form-label" for="manualPrepMode">Préparation</label>
+        <select id="manualPrepMode">
+          <option value="easy" selected>⚡ Facile</option>
+          <option value="oven">🔥 Four</option>
+          <option value="companion">🤖 Compagnon</option>
+          <option value="complex">🧑‍🍳 Complexe</option>
+          <option value="sweet">🍰 Sucré</option>
+        </select>
+        <div id="manualPrepHint" class="prep-hint compact-hidden-hint"></div>
       </div>
-      <div class="full">
-        <button class="btn btn-primary" id="addManualRecipeBtn">＋ Ajouter à Mes recettes</button>
-        <div id="manualRecipeStatus" class="form-status"></div>
+      <div class="compact-text">
+        <label class="form-label" for="manualIngredients">Ingrédients</label>
+        <textarea id="manualIngredients" placeholder="poulet, citron, pommes de terre..."></textarea>
+      </div>
+      <div class="compact-text">
+        <label class="form-label" for="manualSteps">Étapes</label>
+        <textarea id="manualSteps" placeholder="1. Préparer...&#10;2. Cuire..."></textarea>
+      </div>
+      <div class="compact-submit">
+        <button class="btn btn-primary" id="addManualRecipeBtn">＋ Ajouter</button>
       </div>
     </div>
   </div>
-  <div id="libraryGrid" class="library-grid"></div>
+  <div id="libraryGrid" class="recipe-board"></div>
 </section>
 </div>
 
@@ -278,6 +365,17 @@ button,select{font:inherit} .app{max-width:1320px;margin:auto;padding:24px}
       <button type="button" class="btn btn-soft" id="cancelLeftoversBtn">Annuler</button>
       <button type="button" class="btn btn-primary" id="confirmLeftoversBtn">Ajouter à « Ce que j’ai déjà »</button>
     </div>
+  </div>
+</div>
+
+
+<div class="recipe-detail-modal" id="recipeDetailModal" aria-hidden="true">
+  <div class="recipe-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="recipeDetailTitle">
+    <h3 id="recipeDetailTitle">Recette</h3>
+    <div class="muted" id="recipeDetailMeta" style="font-size:12px"></div>
+    <div class="recipe-detail-section"><h4>Ingrédients</h4><ul class="recipe-detail-list" id="recipeDetailIngredients"></ul></div>
+    <div class="recipe-detail-section"><h4>Étapes</h4><ol class="recipe-detail-list" id="recipeDetailSteps"></ol></div>
+    <div class="recipe-detail-actions"><a class="btn btn-soft" id="recipeDetailSource" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:none">Ouvrir la source ↗</a><button class="btn btn-primary" id="closeRecipeDetailBtn" type="button">Fermer</button></div>
   </div>
 </div>
 
@@ -398,8 +496,10 @@ let recipesRealtimeChannel = null;
 let state = JSON.parse(localStorage.getItem("menuflow-smart-state") || "null") || {
   people:4,
   mealCount:4,
+  sweetCount:0,
   savedRecipeIds:recipes.slice(0,DEFAULT_LIBRARY_SIZE).map(r=>r.id),
   generatedMealIds:[],
+  generatedSweetIds:[],
   discoveryId:null,
   customRecipes:[]
 };
@@ -408,6 +508,9 @@ if(!Array.isArray(state.savedRecipeIds) || !state.savedRecipeIds.length) state.s
 if(!Array.isArray(state.generatedMealIds)) state.generatedMealIds = [];
 if(!state.people) state.people = 4;
 if(!state.mealCount) state.mealCount = 4;
+if(!Number.isFinite(Number(state.sweetCount))) state.sweetCount = 0;
+state.sweetCount=Math.max(0,Math.min(3,Number(state.sweetCount)||0));
+if(!Array.isArray(state.generatedSweetIds)) state.generatedSweetIds = [];
 if(!Array.isArray(state.customRecipes)) state.customRecipes = [];
 if(!Array.isArray(state.discoveryHistory)) state.discoveryHistory = [];
 if(!state.dynamicDiscoveryRecipe || typeof state.dynamicDiscoveryRecipe !== "object") state.dynamicDiscoveryRecipe = null;
@@ -417,7 +520,7 @@ let activeDiscoveryRecipe = state.dynamicDiscoveryRecipe;
 const DEFAULT_SHARED_STATE = {
   pantry:[],
   leftovers:[],
-  preferences:{vegetarian:false,noPork:false,noFish:false,quick:false,kids:false,discovery:true},
+  preferences:{vegetarian:false,noPork:false,noFish:false,quick:false,kids:false,discovery:true,ovenPlanning:false,complexPlanning:false,companionPlanning:false},
   feedback:{},
   shoppingChecks:{},
   weekHistory:[],
@@ -427,29 +530,32 @@ const DEFAULT_SHARED_STATE = {
 
 function mergeSharedState(value){
   const incoming = value && typeof value === "object" ? value : {};
+  const incomingPreferences = incoming.preferences && typeof incoming.preferences === "object" ? incoming.preferences : {};
+  const preferences = {...DEFAULT_SHARED_STATE.preferences,...incomingPreferences};
+
+  // Migration v10/v10b vers V0.11.
+  if(typeof incomingPreferences.ovenPlanning!=="boolean") preferences.ovenPlanning=incomingPreferences.prepStrategy==="oven";
+  if(typeof incomingPreferences.companionPlanning!=="boolean") preferences.companionPlanning=!!incomingPreferences.companionPlanning || !!incomingPreferences.monsieurPlanning || incomingPreferences.prepStrategy==="monsieur";
+  if(typeof incomingPreferences.complexPlanning!=="boolean") preferences.complexPlanning=false;
+  delete preferences.prepStrategy;
+  delete preferences.monsieurPlanning;
+
   const legacyAvailable = [
     ...(Array.isArray(incoming.pantry) ? incoming.pantry : []),
     ...(Array.isArray(incoming.leftovers) ? incoming.leftovers : [])
   ];
-  // Important: this migration runs before the ingredient alias table is initialized.
-  // Use a standalone key normalizer here so old pantry/leftover data cannot stop app startup.
   const storedIngredientKey = value => String(value || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim()
-    .replace(/\s+/g, " ");
+    .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().replace(/\s+/g, " ");
   const seen = new Set();
   const pantry = legacyAvailable.filter(name=>{
     const key = storedIngredientKey(name);
     if(!key || seen.has(key)) return false;
-    seen.add(key);
-    return true;
+    seen.add(key); return true;
   });
   return {
     pantry,
     leftovers:[],
-    preferences:{...DEFAULT_SHARED_STATE.preferences,...(incoming.preferences||{})},
+    preferences,
     feedback:incoming.feedback && typeof incoming.feedback === "object" ? incoming.feedback : {},
     shoppingChecks:incoming.shoppingChecks && typeof incoming.shoppingChecks === "object" ? incoming.shoppingChecks : {},
     weekHistory:Array.isArray(incoming.weekHistory) ? incoming.weekHistory.slice(0,3) : [],
@@ -469,6 +575,7 @@ const legacySavedRecipeIds = [...state.savedRecipeIds];
 
 const peopleEl = document.getElementById("people");
 const mealCountEl = document.getElementById("mealCount");
+const sweetCountEl = document.getElementById("sweetCount");
 
 function save(){localStorage.setItem("menuflow-smart-state", JSON.stringify(state));}
 
@@ -772,7 +879,7 @@ function frenchRecipeFromReader(url,sourceName,markdown){
     sourceUrl:url,
     sourceSite:sourceName,
     ingredients,
-    steps:[],
+    steps:Array.isArray(parsed.steps)?parsed.steps:[],
     webDiscovery:true,
     frenchDiscovery:true
   };
@@ -823,21 +930,14 @@ function pantryMatchesForRecipe(recipe){
 }
 
 function webDiscoveryScore(recipe, selectedRecipes){
-  const existing = new Set(
-    selectedRecipes.flatMap(r => r.ingredients.map(i => canonicalIngredient(i[0])))
-  );
-
-  let selectedMealScore = 0;
-  recipe.ingredients.forEach(item => {
-    const key = canonicalIngredient(item[0]);
-    if(existing.has(key)) selectedMealScore += 5;
-  });
-
-  const pantryMatches = new Set(pantryMatchesForRecipe(recipe).map(stripAccents));
-  const pantryScore = pantryMatches.size * 30;
-  const frenchSourceBonus = recipe.frenchDiscovery ? 15 : 0;
-
-  return pantryScore + selectedMealScore + preferenceScore(recipe) + frenchSourceBonus;
+  const existing = new Set(selectedRecipes.flatMap(r => r.ingredients.map(i => canonicalIngredient(i[0]))));
+  let sharedCount=0;
+  recipe.ingredients.forEach(item=>{if(existing.has(canonicalIngredient(item[0]))) sharedCount++;});
+  const pantryCount=new Set(pantryMatchesForRecipe(recipe).map(stripAccents)).size;
+  const frenchSourceBonus=recipe.frenchDiscovery ? 15 : 0;
+  const discoveryRepeatPenalty=recipe.externalId && state.discoveryHistory.includes(String(recipe.externalId)) ? 12 : 0;
+  // Priorité absolue : ingrédients déjà disponibles, puis ingrédients communs.
+  return pantryCount*1000 + sharedCount*100 + preferenceScore(recipe) + frenchSourceBonus - historyPenalty(recipe) - discoveryRepeatPenalty;
 }
 
 async function findFrenchDiscovery(selectedRecipes,excluded,savedNames){
@@ -878,124 +978,64 @@ async function findFrenchDiscovery(selectedRecipes,excluded,savedNames){
 }
 
 async function fetchMealDbFallback(selectedRecipes,excludeExternalIds=[]){
-  const previous=previousWeekRecipeIdentity();
-  const excluded = new Set([
-    ...excludeExternalIds.map(String),
-    ...state.discoveryHistory.map(String),
-    ...previous.externalIds
-  ]);
-  const savedNames = new Set([
-    ...cloudRecipes.map(r => normalizeName(r.name)),
-    ...previous.names
-  ]);
-  const pantryIngredients = pantryApiIngredients();
-  const preferredIngredients = selectedApiIngredients(selectedRecipes);
-
-  let summaries = [];
-  const summaryById = new Map();
+  const excluded=new Set(excludeExternalIds.map(String));
+  const savedNames=new Set(cloudRecipes.map(r=>normalizeName(r.name)));
+  const pantryIngredients=pantryApiIngredients();
+  const preferredIngredients=selectedApiIngredients(selectedRecipes);
+  let summaries=[];
+  const summaryById=new Map();
 
   if(pantryIngredients.length){
     for(const ingredient of pantryIngredients.slice(0,6)){
       try{
-        const payload = await mealDbJson("/filter.php?i=" + encodeURIComponent(ingredient));
-        const meals = (payload && payload.meals) || [];
-        meals.forEach(meal=>{
-          if(
-            !excluded.has(String(meal.idMeal)) &&
-            !savedNames.has(normalizeName(meal.strMeal))
-          ){
-            summaryById.set(String(meal.idMeal),meal);
-          }
+        const payload=await mealDbJson("/filter.php?i="+encodeURIComponent(ingredient));
+        ((payload&&payload.meals)||[]).forEach(meal=>{
+          if(!excluded.has(String(meal.idMeal)) && !savedNames.has(normalizeName(meal.strMeal))) summaryById.set(String(meal.idMeal),meal);
         });
-      }catch(error){
-        console.warn("TheMealDB pantry filter failed for", ingredient, error);
-      }
+      }catch(error){console.warn("TheMealDB pantry filter failed for",ingredient,error);}
     }
-    summaries = [...summaryById.values()];
+    summaries=[...summaryById.values()];
   }
 
   if(!summaries.length){
     for(const ingredient of preferredIngredients.slice(0,6)){
       try{
-        const payload = await mealDbJson("/filter.php?i=" + encodeURIComponent(ingredient));
-        const meals = (payload && payload.meals) || [];
-        const fresh = meals.filter(m =>
-          !excluded.has(String(m.idMeal)) &&
-          !savedNames.has(normalizeName(m.strMeal))
-        );
-        if(fresh.length){
-          summaries = fresh;
-          break;
-        }
-      }catch(error){
-        console.warn("TheMealDB filter failed for", ingredient, error);
-      }
+        const payload=await mealDbJson("/filter.php?i="+encodeURIComponent(ingredient));
+        const fresh=((payload&&payload.meals)||[]).filter(m=>!excluded.has(String(m.idMeal))&&!savedNames.has(normalizeName(m.strMeal)));
+        if(fresh.length){summaries=fresh;break;}
+      }catch(error){console.warn("TheMealDB filter failed for",ingredient,error);}
     }
   }
 
   if(!summaries.length){
-    const randomMeals = [];
+    const randomMeals=[];
     for(let i=0;i<5;i++){
       try{
-        const payload = await mealDbJson("/random.php");
-        const meal = payload && payload.meals && payload.meals[0];
-        if(meal && !excluded.has(String(meal.idMeal)) && !savedNames.has(normalizeName(meal.strMeal))){
-          randomMeals.push(meal);
-        }
-      }catch(error){
-        console.warn("TheMealDB random failed", error);
-      }
+        const payload=await mealDbJson("/random.php");
+        const meal=payload&&payload.meals&&payload.meals[0];
+        if(meal&&!excluded.has(String(meal.idMeal))&&!savedNames.has(normalizeName(meal.strMeal))) randomMeals.push(meal);
+      }catch(error){console.warn("TheMealDB random failed",error);}
     }
-
-    const converted = randomMeals.map(mealDbToRecipe).filter(recipeAllowed);
+    const converted=randomMeals.map(mealDbToRecipe).filter(recipeAllowed);
     if(!converted.length) throw new Error("Aucune nouvelle recette web disponible.");
-
-    return converted
-      .map(recipe => ({recipe,score:webDiscoveryScore(recipe,selectedRecipes)+Math.random()*0.1}))
-      .sort((a,b)=>b.score-a.score)[0].recipe;
+    return converted.map(recipe=>({recipe,score:webDiscoveryScore(recipe,selectedRecipes)+Math.random()*0.1})).sort((a,b)=>b.score-a.score)[0].recipe;
   }
 
-  const sample = [...summaries].sort(()=>Math.random()-0.5).slice(0,8);
-  const fullRecipes = (await Promise.all(sample.map(m => lookupMealDb(m.idMeal))))
-    .filter(Boolean)
-    .filter(r => !savedNames.has(normalizeName(r.name)))
-    .filter(recipeAllowed);
-
+  const sample=[...summaries].sort(()=>Math.random()-0.5).slice(0,10);
+  const fullRecipes=(await Promise.all(sample.map(m=>lookupMealDb(m.idMeal))))
+    .filter(Boolean).filter(r=>!savedNames.has(normalizeName(r.name))).filter(recipeAllowed);
   if(!fullRecipes.length) throw new Error("Impossible de charger le détail des recettes web.");
-
-  return fullRecipes
-    .map(recipe => ({
-      recipe,
-      pantryMatches:pantryMatchesForRecipe(recipe).length,
-      score:webDiscoveryScore(recipe,selectedRecipes)+Math.random()*0.1
-    }))
-    .sort((a,b)=>{
-      if(b.pantryMatches !== a.pantryMatches) return b.pantryMatches-a.pantryMatches;
-      return b.score-a.score;
-    })[0].recipe;
+  return fullRecipes.map(recipe=>({recipe,score:webDiscoveryScore(recipe,selectedRecipes)+Math.random()*0.1})).sort((a,b)=>b.score-a.score)[0].recipe;
 }
 
 async function fetchDynamicDiscovery(selectedRecipes, excludeExternalIds=[]){
-  const previous=previousWeekRecipeIdentity();
-  const excluded = new Set([
-    ...excludeExternalIds.map(String),
-    ...state.discoveryHistory.map(String),
-    ...previous.externalIds
-  ]);
-  const savedNames = new Set([
-    ...cloudRecipes.map(r => normalizeName(r.name)),
-    ...previous.names
-  ]);
-
-  // 1) Priorité aux sites de recettes français et aux mots saisis en français.
+  // L'historique réduit la priorité mais n'interdit plus une recette.
+  const excluded=new Set(excludeExternalIds.map(String));
+  const savedNames=new Set(cloudRecipes.map(r=>normalizeName(r.name)));
   try{
     const frenchRecipe=await findFrenchDiscovery(selectedRecipes,excluded,savedNames);
     if(frenchRecipe) return frenchRecipe;
-  }catch(error){
-    console.warn("Découverte française indisponible, passage au secours TheMealDB.",error);
-  }
-
-  // 2) Secours uniquement si aucun résultat français exploitable.
+  }catch(error){console.warn("Découverte française indisponible, passage au secours TheMealDB.",error);}
   return fetchMealDbFallback(selectedRecipes,excludeExternalIds);
 }
 
@@ -1032,36 +1072,128 @@ function overlapScore(recipe, selectedRecipes){
 }
 
 function feedbackFor(recipe){
-  return state.shared.feedback[String(recipe.id)] || {};
+  return state.shared.feedback[String(recipe && recipe.id)] || {};
 }
 
-function isElaborateRecipe(recipe){
-  // Toute recette non encore classée est considérée comme simple par défaut.
-  return feedbackFor(recipe).elaborated === true;
+const PREP_TAGS=[
+  {key:"easy",label:"⚡ Facile"},
+  {key:"oven",label:"🔥 Four"},
+  {key:"companion",label:"🤖 Compagnon"},
+  {key:"complex",label:"🧑‍🍳 Complexe"},
+  {key:"sweet",label:"🍰 Sucré"}
+];
+const PREP_TAG_KEYS=new Set(PREP_TAGS.map(x=>x.key));
+
+function recipePrepTag(recipe){
+  if(recipe && PREP_TAG_KEYS.has(recipe.prepTag)) return recipe.prepTag;
+  const fb=feedbackFor(recipe||{});
+  if(PREP_TAG_KEYS.has(fb.prepTag)) return fb.prepTag;
+
+  // Migration des anciens tags V10/V10b.
+  const legacy=(recipe&&recipe.prepMode)||fb.prepMode||"";
+  if(legacy==="oven") return "oven";
+  if(legacy==="monsieur") return "companion";
+  if(fb.elaborated===true) return "complex";
+  return "easy";
 }
 
-function isLastMealSlot(index){
-  return index === Math.max(0,state.mealCount-1);
+function prepTagLabel(recipeOrTag){
+  const tag=typeof recipeOrTag==="string"?recipeOrTag:recipePrepTag(recipeOrTag);
+  return (PREP_TAGS.find(x=>x.key===tag)||PREP_TAGS[0]).label;
 }
 
-function recipesForSlot(index, discoveryEnabled){
-  const eligible = cloudRecipes
-    .filter(recipeAllowed)
-    .filter(recipe=>!wasInPreviousWeek(recipe));
+function recipeSteps(recipe){
+  const fb=feedbackFor(recipe||{});
+  if(Array.isArray(fb.steps) && fb.steps.length) return fb.steps.map(x=>String(x).trim()).filter(Boolean);
+  return Array.isArray(recipe&&recipe.steps) ? recipe.steps.map(x=>String(x).trim()).filter(Boolean) : [];
+}
 
-  const isLast=isLastMealSlot(index);
+function parseStepsText(text){
+  return String(text||"").split(/\r?\n/).map(x=>x.replace(/^\s*(?:[-*•]|\d+[.)-]?)\s*/,"").trim()).filter(Boolean);
+}
 
-  // Avec découverte : le dernier repas est réservé à la découverte web.
-  if(discoveryEnabled){
-    if(isLast) return [];
-    return eligible.filter(recipe=>!isElaborateRecipe(recipe));
+function isLastMealSlot(index){return index===Math.max(0,state.mealCount-1);}
+
+function historyMatch(recipe,week){
+  if(!week||!Array.isArray(week.meals)) return false;
+  const id=String(recipe&&recipe.id||"");
+  const name=normalizeName(recipe&&recipe.name||"");
+  const external=String(recipe&&recipe.externalId||"");
+  const url=String(recipe&&recipe.sourceUrl||"");
+  return week.meals.some(meal=>
+    (id && String(meal.id||"")===id) ||
+    (name && normalizeName(meal.name||"")===name) ||
+    (external && String(meal.externalId||"")===external) ||
+    (url && String(meal.sourceUrl||"")===url)
+  );
+}
+
+function historyPenalty(recipe){
+  const history=Array.isArray(state.shared.weekHistory)?state.shared.weekHistory.slice(0,3):[];
+  for(let i=0;i<history.length;i++){
+    if(historyMatch(recipe,history[i])) return [60,40,20][i]||15;
   }
-
-  // Sans découverte : le dernier repas est élaboré, tous les précédents sont simples.
-  return isLast
-    ? eligible.filter(isElaborateRecipe)
-    : eligible.filter(recipe=>!isElaborateRecipe(recipe));
+  return 0;
 }
+
+function pantryMatchCount(recipe){
+  const available=new Set(state.shared.pantry.map(canonicalIngredient));
+  return [...new Set((recipe.ingredients||[]).map(i=>canonicalIngredient(i[0])).filter(k=>available.has(k)))].length;
+}
+
+function commonIngredientCount(recipe,selected=[]){
+  if(!selected.length) return 0;
+  const existing=new Set(selected.flatMap(r=>(r.ingredients||[]).map(i=>canonicalIngredient(i[0]))));
+  return [...new Set((recipe.ingredients||[]).map(i=>canonicalIngredient(i[0])).filter(k=>existing.has(k)))].length;
+}
+
+function planningRecipeScore(recipe,selected=[]){
+  // 1. ce que j'ai déjà ; 2. ingrédients communs ; 3. historique en pénalité douce.
+  return pantryMatchCount(recipe)*1000 + commonIngredientCount(recipe,selected)*100 + preferenceScore(recipe) - historyPenalty(recipe) + Math.random()*0.1;
+}
+
+function sweetRecipeScore(recipe){
+  return pantryMatchCount(recipe)*1000 + preferenceScore(recipe) + Math.random()*0.1;
+}
+
+function bestRecipe(candidates,selected=[],used=new Set()){
+  const unique=candidates.filter(r=>!used.has(String(r.id)));
+  const pool=unique.length?unique:candidates;
+  if(!pool.length) return null;
+  return pool.map(recipe=>({recipe,score:planningRecipeScore(recipe,selected)})).sort((a,b)=>b.score-a.score)[0].recipe;
+}
+
+function preparationPlanStats(meals){
+  const tags=meals.map(recipePrepTag);
+  return {
+    easy:tags.filter(x=>x==="easy").length,
+    oven:tags.filter(x=>x==="oven").length,
+    companion:tags.filter(x=>x==="companion").length,
+    complex:tags.filter(x=>x==="complex").length,
+    sweet:tags.filter(x=>x==="sweet").length
+  };
+}
+
+function planRequestedOptions(){
+  return {
+    oven:!!state.shared.preferences.ovenPlanning,
+    complex:!!state.shared.preferences.complexPlanning,
+    companion:!!state.shared.preferences.companionPlanning,
+    discovery:state.shared.preferences.discovery!==false
+  };
+}
+
+function validatePreparationPlan(meals){
+  const stats=preparationPlanStats(meals.filter(recipe=>!recipe.isDiscovery&&!recipe.webDiscovery));
+  const requested=planRequestedOptions();
+  const warnings=[];
+  if(requested.oven&&stats.oven<2) warnings.push("Four activé mais moins de 2 recettes Four");
+  if(requested.complex&&stats.complex<1) warnings.push("option Complexe non satisfaite");
+  if(requested.companion&&stats.companion<1) warnings.push("option Compagnon non satisfaite");
+  if(requested.discovery&&!meals.some(r=>r.isDiscovery||r.webDiscovery)) warnings.push("option Découverte non satisfaite");
+  return {ok:!warnings.length,stats,warnings,message:warnings.join(" · ")};
+}
+
 function ingredientSetFor(recipe){
   return new Set((recipe.ingredients||[]).map(i=>canonicalIngredient(i[0])));
 }
@@ -1275,7 +1407,7 @@ async function insertRecipeInCloud(recipe){
     .insert({
       user_id:currentUser.id,
       name:recipe.name,
-      url:recipe.sourceUrl || recipeSourceUrl(recipe),
+      url:recipe.sourceUrl || null,
       time_minutes:Number(recipe.time) || 30,
       ingredients:recipe.ingredients || []
     })
@@ -1440,6 +1572,17 @@ function findRecipeJsonLd(value){
   return null;
 }
 
+function instructionText(value){
+  if(!value) return [];
+  if(typeof value==="string") return [value];
+  if(Array.isArray(value)) return value.flatMap(instructionText);
+  if(typeof value==="object"){
+    if(value.text) return [String(value.text)];
+    if(value.itemListElement) return instructionText(value.itemListElement);
+  }
+  return [];
+}
+
 function parseStructuredRecipeHtml(html){
   const doc=new DOMParser().parseFromString(html,"text/html");
   for(const script of doc.querySelectorAll('script[type="application/ld+json"]')){
@@ -1447,7 +1590,12 @@ function parseStructuredRecipeHtml(html){
       const recipe=findRecipeJsonLd(JSON.parse(script.textContent));
       if(recipe){
         const time=durationToMinutes(recipe.totalTime)||durationToMinutes(recipe.prepTime)+durationToMinutes(recipe.cookTime)||30;
-        return {name:recipe.name||"",time,ingredients:Array.isArray(recipe.recipeIngredient)?recipe.recipeIngredient:[]};
+        return {
+          name:recipe.name||"",
+          time,
+          ingredients:Array.isArray(recipe.recipeIngredient)?recipe.recipeIngredient:[],
+          steps:instructionText(recipe.recipeInstructions).map(x=>String(x).trim()).filter(Boolean)
+        };
       }
     }catch(e){}
   }
@@ -1457,127 +1605,116 @@ function parseStructuredRecipeHtml(html){
 function parseReaderRecipe(text){
   const lines=String(text||"").split(/\r?\n/);
   let name="";
-  const titleLine=lines.find(l=>/^Title:\s*/i.test(l)) || lines.find(l=>/^#\s+/.test(l));
+  const titleLine=lines.find(l=>/^Title:\s*/i.test(l))||lines.find(l=>/^#\s+/.test(l));
   if(titleLine) name=titleLine.replace(/^Title:\s*/i,"").replace(/^#\s+/,"").trim();
 
   let time=30;
   for(const line of lines){
     if(/(prep|preparation|préparation|total time|temps total|cuisson)/i.test(line)){
-      const mins=durationToMinutes(line);
-      if(mins){time=mins;break;}
+      const mins=durationToMinutes(line); if(mins){time=mins;break;}
     }
   }
 
-  const start=lines.findIndex(l=>/^#{1,4}\s*(ingredients?|ingrédients?)/i.test(l.trim()) || /^(ingredients?|ingrédients?)\s*:?$/i.test(l.trim()));
+  const ingredientStart=lines.findIndex(l=>/^#{1,4}\s*(ingredients?|ingrédients?)/i.test(l.trim())||/^(ingredients?|ingrédients?)\s*:?$/i.test(l.trim()));
   const ingredients=[];
-  if(start>=0){
-    for(let i=start+1;i<Math.min(lines.length,start+45);i++){
+  if(ingredientStart>=0){
+    for(let i=ingredientStart+1;i<Math.min(lines.length,ingredientStart+55);i++){
       const line=lines[i].trim();
-      if(/^#{1,4}\s+/.test(line) && !/(ingredient|ingrédient)/i.test(line)) break;
+      if(/^#{1,4}\s+/.test(line)&&!/(ingredient|ingrédient)/i.test(line)) break;
       const m=line.match(/^(?:[-*+]\s+|\d+[.)]\s+)(.+)$/);
-      if(m && m[1].length<180) ingredients.push(m[1].replace(/\[([^\]]+)\]\([^\)]+\)/g,"$1").trim());
+      if(m&&m[1].length<180) ingredients.push(m[1].replace(/\[([^\]]+)\]\([^\)]+\)/g,"$1").trim());
     }
   }
-  return {name,time,ingredients};
+
+  const stepStart=lines.findIndex(l=>/^#{1,4}\s*(préparation|preparation|étapes?|etapes?|instructions?|méthode|methode)/i.test(l.trim()));
+  const steps=[];
+  if(stepStart>=0){
+    for(let i=stepStart+1;i<Math.min(lines.length,stepStart+80);i++){
+      const line=lines[i].trim();
+      if(/^#{1,4}\s+/.test(line)&&i>stepStart+1) break;
+      const m=line.match(/^(?:[-*+]\s+|\d+[.)]\s+)(.+)$/);
+      if(m&&m[1].length<500) steps.push(m[1].replace(/\[([^\]]+)\]\([^\)]+\)/g,"$1").trim());
+    }
+  }
+  return {name,time,ingredients,steps};
 }
 
 async function analyzeRecipeUrl(){
   const urlEl=document.getElementById("manualUrl");
   const statusEl=document.getElementById("manualRecipeStatus");
   const url=safeUrl(urlEl.value.trim());
-  if(!url){statusEl.className="form-status err";statusEl.textContent="Ajoute d'abord un lien valide.";return;}
-  statusEl.className="form-status";
-  statusEl.textContent="Analyse de la recette…";
+  if(!url){statusEl.className="form-status err";statusEl.textContent="Ajoute un lien valide pour lancer l’analyse, ou laisse le lien vide et remplis la recette manuellement.";return;}
+  statusEl.className="form-status"; statusEl.textContent="Analyse de la recette…";
 
   let parsed=null;
-  try{
-    const direct=await fetch(url);
-    if(direct.ok) parsed=parseStructuredRecipeHtml(await direct.text());
-  }catch(e){}
-
-  if(!parsed || !parsed.ingredients || !parsed.ingredients.length){
+  try{const direct=await fetch(url); if(direct.ok) parsed=parseStructuredRecipeHtml(await direct.text());}catch(e){}
+  if(!parsed||!parsed.ingredients||!parsed.ingredients.length){
     try{
       const reader=await fetch("https://r.jina.ai/"+url,{headers:{Accept:"text/plain"}});
       if(!reader.ok) throw new Error("Reader HTTP "+reader.status);
       parsed=parseReaderRecipe(await reader.text());
-    }catch(error){
-      statusEl.className="form-status err";
-      statusEl.textContent="Impossible d'analyser automatiquement ce site. Tu peux toujours remplir les champs manuellement.";
-      return;
-    }
+    }catch(error){statusEl.className="form-status err";statusEl.textContent="Impossible d'analyser automatiquement ce site. Tu peux remplir exactement le même formulaire manuellement.";return;}
   }
 
   if(parsed.name) document.getElementById("manualName").value=parsed.name;
   if(parsed.time) document.getElementById("manualTime").value=Math.max(1,Math.min(300,parsed.time));
-  if(parsed.ingredients && parsed.ingredients.length) document.getElementById("manualIngredients").value=parsed.ingredients.slice(0,25).join(", ");
+  if(parsed.ingredients&&parsed.ingredients.length) document.getElementById("manualIngredients").value=parsed.ingredients.slice(0,30).join(", ");
+  if(parsed.steps&&parsed.steps.length) document.getElementById("manualSteps").value=parsed.steps.slice(0,30).join("\n");
   statusEl.className="form-status ok";
-  statusEl.textContent="Champs préremplis. Vérifie surtout les ingrédients avant d'ajouter la recette.";
+  statusEl.textContent="Champs préremplis. Tu peux tout corriger avant d’enregistrer.";
+}
+
+function renderManualPrepHint(){
+  const select=document.getElementById("manualPrepMode");
+  const hint=document.getElementById("manualPrepHint");
+  if(!select||!hint) return;
+  const messages={
+    easy:"⚡ Recette du quotidien proposée par défaut.",
+    oven:"🔥 Utilisée quand l’option Four est activée (au moins 2 si possible).",
+    companion:"🤖 Utilisée quand l’option Compagnon est activée.",
+    complex:"🧑‍🍳 Utilisée quand l’option Complexe est activée.",
+    sweet:"🍰 Planifiée séparément dans la zone Sucrée, sans historique."
+  };
+  hint.className="prep-hint";
+  hint.textContent=messages[select.value]||messages.easy;
 }
 
 async function addManualRecipe(){
-  const urlEl = document.getElementById("manualUrl");
-  const nameEl = document.getElementById("manualName");
-  const timeEl = document.getElementById("manualTime");
-  const ingredientsEl = document.getElementById("manualIngredients");
-  const statusEl = document.getElementById("manualRecipeStatus");
+  const urlEl=document.getElementById("manualUrl");
+  const nameEl=document.getElementById("manualName");
+  const timeEl=document.getElementById("manualTime");
+  const ingredientsEl=document.getElementById("manualIngredients");
+  const stepsEl=document.getElementById("manualSteps");
+  const prepModeEl=document.getElementById("manualPrepMode");
+  const statusEl=document.getElementById("manualRecipeStatus");
 
-  const url = safeUrl(urlEl.value.trim());
-  const name = nameEl.value.trim();
-  const time = Math.max(1, Number(timeEl.value) || 30);
-  const ingredientNames = ingredientsEl.value
-    .split(",")
-    .map(x=>x.trim())
-    .filter(Boolean);
+  const rawUrl=urlEl.value.trim();
+  const url=rawUrl?safeUrl(rawUrl):"";
+  const name=nameEl.value.trim();
+  const time=Math.max(1,Number(timeEl.value)||30);
+  const prepTag=PREP_TAG_KEYS.has(prepModeEl.value)?prepModeEl.value:"easy";
+  const ingredientNames=ingredientsEl.value.split(",").map(x=>x.trim()).filter(Boolean);
+  const steps=parseStepsText(stepsEl.value);
 
-  statusEl.className = "form-status";
+  statusEl.className="form-status";
+  if(!currentUser){statusEl.textContent="Connecte-toi d’abord à Popot.";statusEl.classList.add("err");return;}
+  if(rawUrl&&!url){statusEl.textContent="Le lien indiqué n’est pas valide. Corrige-le ou laisse le champ vide.";statusEl.classList.add("err");return;}
+  if(!name){statusEl.textContent="Indique le nom de la recette.";statusEl.classList.add("err");return;}
+  if(!ingredientNames.length){statusEl.textContent="Ajoute au moins un ingrédient.";statusEl.classList.add("err");return;}
+  if(!steps.length&&!url){statusEl.textContent="Pour une recette manuelle sans lien, ajoute au moins une étape de fabrication.";statusEl.classList.add("err");return;}
 
-  if(!currentUser){
-    statusEl.textContent = "Connecte-toi d’abord à Popot.";
-    statusEl.classList.add("err");
-    return;
-  }
-  if(!url){
-    statusEl.textContent = "Ajoute un lien web valide commençant par http:// ou https://.";
-    statusEl.classList.add("err");
-    return;
-  }
-  if(!name){
-    statusEl.textContent = "Indique le nom de la recette.";
-    statusEl.classList.add("err");
-    return;
-  }
-  if(!ingredientNames.length){
-    statusEl.textContent = "Ajoute au moins un ingrédient principal.";
-    statusEl.classList.add("err");
-    return;
-  }
-
-  const recipe = {
-    name,
-    emoji:"🍽️",
-    time,
-    tags:["personnelle"],
-    sourceUrl:url,
-    ingredients:ingredientNames.map(ingredient => [ingredient,1,"portion","Autres"]),
-    steps:[]
-  };
-
+  const recipe={name,emoji:"🍽️",time,tags:["personnelle"],sourceUrl:url,ingredients:ingredientNames.map(ingredient=>[ingredient,1,"portion","Autres"]),steps};
   try{
-    await insertRecipeInCloud(recipe);
+    const cloudRecipe=await insertRecipeInCloud(recipe);
+    const fb=feedbackFor(cloudRecipe);
+    state.shared.feedback[String(cloudRecipe.id)]={...fb,prepTag,steps};
+    await saveSharedAppState();
     await loadCloudRecipes({seedIfEmpty:false});
 
-    urlEl.value = "";
-    nameEl.value = "";
-    timeEl.value = "30";
-    ingredientsEl.value = "";
-
-    statusEl.textContent = "Recette ajoutée et synchronisée.";
-    statusEl.classList.add("ok");
-  }catch(error){
-    console.error(error);
-    statusEl.textContent = "Impossible d’ajouter la recette : " + (error.message || error);
-    statusEl.classList.add("err");
-  }
+    urlEl.value=""; nameEl.value=""; timeEl.value="30"; prepModeEl.value="easy"; ingredientsEl.value=""; stepsEl.value="";
+    renderManualPrepHint();
+    statusEl.textContent="Recette ajoutée et synchronisée."; statusEl.classList.add("ok");
+  }catch(error){console.error(error);statusEl.textContent="Impossible d’ajouter la recette : "+(error.message||error);statusEl.classList.add("err");}
 }
 
 
@@ -1624,31 +1761,35 @@ function isPlanLocked(){
 
 function snapshotRecipe(recipe,index){
   return {
-    id:recipe.id || `meal-${index}`,
-    externalId:recipe.externalId || null,
-    name:recipe.name || `Repas ${index+1}`,
-    emoji:recipe.emoji || "🍽️",
+    id:recipe.id||`meal-${index}`,
+    externalId:recipe.externalId||null,
+    name:recipe.name||`Repas ${index+1}`,
+    emoji:recipe.emoji||"🍽️",
     time:Number(recipe.time)||30,
     tags:Array.isArray(recipe.tags)?recipe.tags:[],
-    sourceUrl:recipe.sourceUrl || recipeSourceUrl(recipe),
-    sourceSite:recipe.sourceSite || "",
+    sourceUrl:recipe.sourceUrl||"",
+    sourceSite:recipe.sourceSite||"",
     ingredients:Array.isArray(recipe.ingredients)?recipe.ingredients:[],
-    isDiscovery:state.discoveryId===recipe.id || !!recipe.isDiscovery,
+    steps:recipeSteps(recipe),
+    prepTag:recipePrepTag(recipe),
+    isDiscovery:state.discoveryId===recipe.id||!!recipe.isDiscovery,
     webDiscovery:!!recipe.webDiscovery
   };
 }
 
 function recipeFromSnapshot(meal,index){
   return {
-    id:meal.id || `locked-${index}`,
-    externalId:meal.externalId || null,
-    name:meal.name || `Repas ${index+1}`,
-    emoji:meal.emoji || "🍽️",
+    id:meal.id||`locked-${index}`,
+    externalId:meal.externalId||null,
+    name:meal.name||`Repas ${index+1}`,
+    emoji:meal.emoji||"🍽️",
     time:Number(meal.time)||30,
     tags:Array.isArray(meal.tags)?meal.tags:[],
-    sourceUrl:meal.sourceUrl || "",
-    sourceSite:meal.sourceSite || "",
+    sourceUrl:meal.sourceUrl||"",
+    sourceSite:meal.sourceSite||"",
     ingredients:Array.isArray(meal.ingredients)?meal.ingredients:[],
+    steps:Array.isArray(meal.steps)?meal.steps:[],
+    prepTag:PREP_TAG_KEYS.has(meal.prepTag)?meal.prepTag:(meal.prepMode==="oven"?"oven":(meal.prepMode==="monsieur"?"companion":"easy")),
     isDiscovery:!!meal.isDiscovery,
     webDiscovery:!!meal.webDiscovery,
     lockedSnapshot:true
@@ -1656,15 +1797,18 @@ function recipeFromSnapshot(meal,index){
 }
 
 function currentPlanRecipes(){
-  if(isPlanLocked()){
-    return state.shared.lockedWeek.meals.map(recipeFromSnapshot);
-  }
+  if(isPlanLocked()) return state.shared.lockedWeek.meals.map(recipeFromSnapshot);
   return state.generatedMealIds.map(recipeById).filter(Boolean);
 }
 
-function currentPlanPeople(){
-  return isPlanLocked() ? Number(state.shared.lockedWeek.people)||state.people : state.people;
+function currentSweetRecipes(){
+  if(isPlanLocked()&&Array.isArray(state.shared.lockedWeek.sweetMeals)) return state.shared.lockedWeek.sweetMeals.map(recipeFromSnapshot);
+  return state.generatedSweetIds.map(recipeById).filter(Boolean);
 }
+
+function currentAllPlanRecipes(){return [...currentPlanRecipes(),...currentSweetRecipes()];}
+
+function currentPlanPeople(){return isPlanLocked()?Number(state.shared.lockedWeek.people)||state.people:state.people;}
 
 function previousLockedWeek(){
   const history=Array.isArray(state.shared.weekHistory)?state.shared.weekHistory:[];
@@ -1703,33 +1847,26 @@ function wasInPreviousWeek(recipe){
 async function lockCurrentWeek(){
   if(isPlanLocked()) return;
   const meals=state.generatedMealIds.map(recipeById).filter(Boolean);
-  if(!meals.length){
-    alert("Génère d'abord tes repas avant de valider la semaine.");
-    return;
-  }
-  if(meals.length!==state.mealCount){
-    alert("La planification n'est pas complète. Génère tous les repas avant de la bloquer.");
-    return;
-  }
+  const sweetMeals=state.generatedSweetIds.map(recipeById).filter(Boolean);
+  if(!meals.length){alert("Génère d'abord tes repas avant de valider la semaine.");return;}
+  if(meals.length!==state.mealCount){alert("La planification n'est pas complète. Génère tous les repas avant de la bloquer.");return;}
+
+  const prepValidation=validatePreparationPlan(meals);
+  if(!prepValidation.ok && !confirm("Attention : "+prepValidation.message+".\n\nBloquer quand même cette semaine ?")) return;
 
   const info=currentPlanningWeekInfo();
   const snapshot={
-    id:`${info.key}-${Date.now()}`,
-    weekKey:info.key,
-    weekStart:info.start,
-    label:info.label,
-    lockedAt:new Date().toISOString(),
-    people:state.people,
-    mealCount:state.mealCount,
-    meals:meals.map(snapshotRecipe)
+    id:`${info.key}-${Date.now()}`,weekKey:info.key,weekStart:info.start,label:info.label,lockedAt:new Date().toISOString(),
+    people:state.people,mealCount:state.mealCount,meals:meals.map(snapshotRecipe),sweetMeals:sweetMeals.map(snapshotRecipe)
   };
-
+  const historyEntry={...snapshot};
+  historyEntry.meals=historyEntry.meals.filter(meal=>meal.prepTag!=="sweet");
+  delete historyEntry.sweetMeals; // Les recettes sucrées ne sont jamais stockées dans l'historique.
   const history=(state.shared.weekHistory||[]).filter(item=>item.weekKey!==snapshot.weekKey);
-  state.shared.weekHistory=[snapshot,...history].slice(0,3);
+  state.shared.weekHistory=[historyEntry,...history].slice(0,3);
   state.shared.lockedWeek=snapshot;
   state.shared.planningWeekStart=info.start;
-  await saveSharedAppState();
-  renderAll();
+  await saveSharedAppState(); renderAll();
 }
 
 async function unlockCurrentWeek(){
@@ -1741,6 +1878,7 @@ async function unlockCurrentWeek(){
   state.shared.planningWeekStart=locked.weekStart || state.shared.planningWeekStart;
   state.shared.lockedWeek=null;
   state.generatedMealIds=[];
+  state.generatedSweetIds=[];
   state.discoveryId=null;
   setActiveDiscovery(null);
   state.shared.shoppingChecks={};
@@ -1758,6 +1896,7 @@ async function startNewWeek(){
   state.shared.planningWeekStart=isoDateLocal(base);
   state.shared.lockedWeek=null;
   state.generatedMealIds=[];
+  state.generatedSweetIds=[];
   state.discoveryId=null;
   setActiveDiscovery(null);
   state.shared.shoppingChecks={};
@@ -1792,8 +1931,8 @@ function renderWeekPlanning(){
 
   peopleEl.disabled=locked;
   mealCountEl.disabled=locked;
-  const discovery=document.getElementById("prefDiscovery");
-  if(discovery) discovery.disabled=locked;
+  ["prefDiscovery","prefOven","prefComplex","prefCompanion"].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=locked;});
+  if(sweetCountEl) sweetCountEl.disabled=locked;
   const generate=document.getElementById("generateBtn");
   if(generate && !generate.dataset.loading){
     generate.disabled=locked;
@@ -1831,104 +1970,97 @@ async function generateMeals(){
     alert("Cette semaine est bloquée. Utilise « Modifier cette semaine » ou « Nouvelle semaine » avant de générer un nouveau menu.");
     return;
   }
+  if(!currentUser){alert("Connecte-toi d’abord pour charger Mes recettes.");return;}
 
-  const saved = cloudRecipes.slice().sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
-  const eligibleSaved = saved.filter(recipeAllowed).filter(recipe=>!wasInPreviousWeek(recipe));
-  const chosen=[];
+  const saved=cloudRecipes.slice().sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
+  const savory=saved.filter(recipeAllowed).filter(r=>recipePrepTag(r)!=="sweet");
+  const requested=planRequestedOptions();
+  const planned=[];
   const used=new Set();
-  const discoveryEnabled=state.shared.preferences.discovery !== false;
+  let remaining=state.mealCount;
 
-  if(!currentUser){
-    alert("Connecte-toi d’abord pour charger Mes recettes.");
-    return;
+  function candidates(tag){return savory.filter(r=>recipePrepTag(r)===tag&&!used.has(String(r.id)));}
+  function addTag(tag,count){
+    if(count<=0||remaining<count) return false;
+    const pool=candidates(tag);
+    if(pool.length<count) return false;
+    for(let i=0;i<count;i++){
+      const recipe=bestRecipe(pool.filter(r=>!used.has(String(r.id))),planned,used);
+      if(!recipe) return false;
+      planned.push(recipe); used.add(String(recipe.id)); remaining--;
+    }
+    return true;
   }
 
-  if(!eligibleSaved.length && state.mealCount>0){
-    alert("Aucune recette disponible ne correspond aux filtres après exclusion des repas de la semaine précédente. Modifie tes préférences ou ajoute des recettes compatibles.");
-    return;
+  // Priorité décroissante demandée : Four > Complexe > Compagnon > Découverte.
+  if(requested.oven) addTag("oven",2);
+  if(requested.complex) addTag("complex",1);
+  if(requested.companion) addTag("companion",1);
+
+  const discoveryCanFit=requested.discovery&&remaining>=1;
+  if(discoveryCanFit) remaining--; // réserve la dernière place, priorité la plus basse.
+
+  // Tout le reste est Facile par défaut.
+  for(let i=0;i<remaining;i++){
+    const pool=candidates("easy");
+    const recipe=bestRecipe(pool,planned,used);
+    if(!recipe){
+      alert("Pas assez de recettes « Facile » pour compléter la semaine. Ajoute ou reclasse des recettes dans Mes recettes.");
+      return;
+    }
+    planned.push(recipe); used.add(String(recipe.id));
   }
 
-  const simplePool=eligibleSaved.filter(recipe=>!isElaborateRecipe(recipe));
-  const elaboratePool=eligibleSaved.filter(isElaborateRecipe);
-
-  // Tous les repas avant le dernier sont simples.
-  const simpleTarget=Math.max(0,state.mealCount-1);
-
-  if(simpleTarget>0 && !simplePool.length){
-    alert("Aucune recette « simple » n’est disponible. Les nouvelles recettes sont simples par défaut ; tu peux aussi décocher « Élaboré » dans Mes recettes.");
-    return;
+  // Génération sucrée indépendante, sans historique.
+  const sweets=saved.filter(recipeAllowed).filter(r=>recipePrepTag(r)==="sweet");
+  const sweetChosen=[];
+  const sweetUsed=new Set();
+  for(let i=0;i<state.sweetCount;i++){
+    const pool=sweets.filter(r=>!sweetUsed.has(String(r.id)));
+    if(!pool.length) break;
+    const recipe=pool.map(recipe=>({recipe,score:sweetRecipeScore(recipe)})).sort((a,b)=>b.score-a.score)[0].recipe;
+    sweetChosen.push(recipe); sweetUsed.add(String(recipe.id));
   }
-
-  for(let i=0;i<simpleTarget;i++){
-    let pool=simplePool.filter(r=>!used.has(r.id));
-    if(!pool.length) pool=simplePool;
-    const recipe=chosen.length ? pickBest(pool,chosen) : pickBest(pool,[]);
-    if(!recipe) break;
-    chosen.push(recipe);
-    used.add(recipe.id);
+  if(sweetChosen.length<state.sweetCount){
+    alert(`PoPot a trouvé ${sweetChosen.length} recette${sweetChosen.length>1?"s":""} sucrée${sweetChosen.length>1?"s":""} disponible${sweetChosen.length>1?"s":""} sur ${state.sweetCount} demandée${state.sweetCount>1?"s":""}.`);
   }
+  state.generatedSweetIds=sweetChosen.map(r=>r.id);
 
-  if(chosen.length<simpleTarget){
-    alert("PoPot n'a pas assez de recettes simples compatibles pour remplir les repas avant le dernier.");
-    return;
-  }
-
-  if(discoveryEnabled){
-    // Le dernier repas est toujours la découverte web.
+  if(discoveryCanFit){
     setDiscoveryLoading(true);
     try{
-      const discovery=await fetchDynamicDiscovery(chosen);
+      const discovery=await fetchDynamicDiscovery(planned);
       setActiveDiscovery(discovery);
-
       if(discovery.externalId){
-        state.discoveryHistory=[
-          ...state.discoveryHistory.filter(id=>String(id)!==String(discovery.externalId)),
-          String(discovery.externalId)
-        ].slice(-40);
+        state.discoveryHistory=[...state.discoveryHistory.filter(id=>String(id)!==String(discovery.externalId)),String(discovery.externalId)].slice(-40);
       }
-
-      const orderedMeals=[...chosen,discovery].slice(0,state.mealCount);
-      state.generatedMealIds=orderedMeals.map(r=>r.id);
+      planned.push(discovery); // toujours dernier
+      state.generatedMealIds=planned.map(r=>r.id);
       state.discoveryId=discovery.id;
       state.shared.shoppingChecks={};
-      await saveSharedAppState();
-      save();
-      renderAll();
+      await saveSharedAppState(); save(); renderAll();
     }catch(error){
       console.error(error);
-      alert("Impossible de trouver une recette découverte compatible sur le web pour le moment : "+(error.message||error));
-    }finally{
-      setDiscoveryLoading(false);
-    }
+      // Découverte = priorité la plus basse : si elle échoue, on remplit par une recette Facile.
+      const fallback=bestRecipe(candidates("easy"),planned,used);
+      if(fallback){planned.push(fallback);used.add(String(fallback.id));}
+      else alert("La découverte n'a pas pu être chargée et aucune recette Facile supplémentaire n'est disponible pour compléter le dernier repas.");
+      state.generatedMealIds=planned.map(r=>r.id);
+      state.discoveryId=null; setActiveDiscovery(null); state.shared.shoppingChecks={};
+      await saveSharedAppState(); save(); renderAll();
+      alert("La découverte web n’a pas pu être chargée ; PoPot a privilégié les recettes locales selon l’ordre de priorité.");
+    }finally{setDiscoveryLoading(false);}
     return;
   }
 
-  // Sans découverte, le dernier repas est toujours élaboré.
-  if(!elaboratePool.length){
-    alert("Aucune recette « élaborée » n’est disponible pour le dernier repas. Coche « Élaboré » sur au moins une recette dans Mes recettes.");
-    return;
-  }
-
-  let elaborateCandidates=elaboratePool.filter(r=>!used.has(r.id));
-  if(!elaborateCandidates.length) elaborateCandidates=elaboratePool;
-  const elaborateRecipe=chosen.length ? pickBest(elaborateCandidates,chosen) : pickBest(elaborateCandidates,[]);
-
-  if(!elaborateRecipe){
-    alert("Impossible de sélectionner une recette élaborée pour le dernier repas.");
-    return;
-  }
-
-  chosen.push(elaborateRecipe);
-  state.discoveryId=null;
-  setActiveDiscovery(null);
-  state.generatedMealIds=chosen.slice(0,state.mealCount).map(r=>r.id);
+  state.discoveryId=null; setActiveDiscovery(null);
+  state.generatedMealIds=planned.map(r=>r.id);
   state.shared.shoppingChecks={};
-  await saveSharedAppState();
-  save();
-  renderAll();
+  await saveSharedAppState(); save(); renderAll();
 }
+
 function calculateReuse(){
-  const chosen=currentPlanRecipes();
+  const chosen=currentAllPlanRecipes();
   if(chosen.length<2) return {score:0,reused:[],totalUnique:chosen.length?ingredientKeys(chosen[0]).length:0};
   const counts={};
   chosen.forEach(recipe=>ingredientKeys(recipe).forEach(key=>counts[key]=(counts[key]||0)+1));
@@ -1942,7 +2074,7 @@ function formatQty(qty,unit){const rounded=Math.round(qty*10)/10;return `${round
 function shoppingData(){
   const grouped={};
   const available=new Set(state.shared.pantry.map(canonicalIngredient));
-  currentPlanRecipes().forEach(recipe=>{
+  currentAllPlanRecipes().forEach(recipe=>{
     recipe.ingredients.forEach(([name,qty,unit,category])=>{
       const canonical=canonicalIngredient(name);
       if(available.has(canonical)) return;
@@ -1967,79 +2099,86 @@ function sharedIngredientsFor(recipe){
     .map(item=>item.display);
 }
 
+function renderPreparationSummary(){
+  const el=document.getElementById("prepPlanSummary");
+  if(!el) return;
+  const meals=currentPlanRecipes();
+  if(!meals.length){el.className="prep-plan-summary";el.innerHTML="";return;}
+  const validation=validatePreparationPlan(meals);
+  const stats=validation.stats;
+  const requested=planRequestedOptions();
+  const bits=[`<strong>⚡ ${stats.easy} facile${stats.easy>1?"s":""}</strong>`];
+  if(stats.oven) bits.push(`🔥 ${stats.oven} four`);
+  if(stats.complex) bits.push(`🧑‍🍳 ${stats.complex} complexe`);
+  if(stats.companion) bits.push(`🤖 ${stats.companion} compagnon`);
+  if(meals.some(r=>r.isDiscovery||r.webDiscovery)) bits.push("🌐 découverte");
+  const sweet=currentSweetRecipes().length; if(sweet) bits.push(`🍰 ${sweet} sucré${sweet>1?"s":""}`);
+  el.className=`prep-plan-summary show ${validation.ok?"good":"warn"}`;
+  el.innerHTML=bits.join(" · ")+(validation.ok?"":` · ⚠️ ${escapeHtml(validation.message)}`);
+}
+
+function recipeActionLink(recipe){
+  if(recipe.sourceUrl) return `<a class="recipe-link" href="${escapeHtml(recipe.sourceUrl)}" target="_blank" rel="noopener noreferrer">🔗 Ouvrir la source ↗</a>`;
+  return `<button class="mini-btn" type="button" data-view-recipe="${recipe.id}" style="margin-top:12px">📋 Voir la recette</button>`;
+}
+
 function renderMeals(){
   const el=document.getElementById("mealList");
   const locked=isPlanLocked();
   const chosen=currentPlanRecipes();
-  const savedRecipes=cloudRecipes
-    .slice()
-    .sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
-  const discoveryEnabled=state.shared.preferences.discovery !== false;
-
-  if(!chosen.length){
-    el.innerHTML=`<div class="empty" style="grid-column:1/-1">Clique sur <strong>Générer mes repas</strong> pour créer un menu anti-gaspillage.</div>`;
-    return;
-  }
+  const savedRecipes=cloudRecipes.slice().filter(recipeAllowed).sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
+  if(!chosen.length){el.innerHTML=`<div class="empty" style="grid-column:1/-1">Clique sur <strong>Générer mes repas</strong> pour créer ton menu.</div>`;return;}
 
   el.innerHTML=chosen.map((recipe,index)=>{
-    const isNew=locked ? !!recipe.isDiscovery : state.discoveryId===recipe.id;
+    const isNew=locked?!!recipe.isDiscovery:state.discoveryId===recipe.id;
     const shared=sharedIngredientsFor(recipe);
-    const pantryMatches=isNew ? [...new Set(pantryMatchesForRecipe(recipe))] : [];
-
-    const slotRecipes = recipesForSlot(index,discoveryEnabled)
-      .slice()
-      .sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
-
-    const librarySelector = !locked && !isNew ? `
-      <div class="meal-actions">
-        <select class="meal-select" data-replace-index="${index}">
-          ${slotRecipes.map(r=>`<option value="${r.id}" ${r.id===recipe.id?"selected":""}>${r.name}</option>`).join("")}
-        </select>
-      </div>` : "";
-
-    const discoveryActions = isNew && !locked ? `
-      <div class="meal-actions">
-        <button class="btn btn-soft" style="flex:1" data-change-discovery="1">↻ Chercher une autre recette</button>
-        <button class="btn btn-primary" style="flex:1" data-validate="${recipe.id}">✓ Valider et ajouter</button>
-      </div>` : "";
-
-    return `
-      <article class="meal-card ${isNew?"new":""} ${locked?"locked-card":""}">
-        <div class="meal-main">
-          <div class="emoji">${recipe.emoji}</div>
-          <div>
-            <span class="badge ${isNew?"badge-new web-badge":""}">${isNew?(recipe.sourceSite?"🇫🇷 Découverte · "+recipe.sourceSite:"🌐 Découverte web"):"📚 Ma bibliothèque"}</span>
-            ${!isNew ? `<span class="complexity-badge ${isElaborateRecipe(recipe)?"elaborate":""}">${isElaborateRecipe(recipe)?"🍳 Élaboré":"⚡ Simple"}</span>` : ""}
-            <h4>Repas ${index+1} · ${recipe.name}</h4>
-            <p>⏱️ ${recipe.time} min</p>
-          </div>
-        </div>
-        ${isNew && pantryMatches.length ? `<div class="shared">🏠 Déjà chez toi : ${pantryMatches.slice(0,6).join(", ")}</div>` : ""}
-        <div class="shared">${shared.length?"♻️ Mutualisés avec les autres repas : "+shared.slice(0,5).join(", "):"Peu d'ingrédients partagés avec les autres repas"}</div>
-        <a class="recipe-link" href="${recipeSourceUrl(recipe)}" target="_blank" rel="noopener noreferrer">🔗 Ouvrir la recette ↗</a>
-        ${librarySelector}
-        ${discoveryActions}
-        <div class="meal-actions"><button class="mini-btn" data-leftovers-recipe="${recipe.id}">♻️ J’ai des restes</button></div>
-      </article>`;
+    const pantryMatches=isNew?[...new Set(pantryMatchesForRecipe(recipe))]:[];
+    const librarySelector=!locked&&!isNew?`<div class="meal-actions"><select class="meal-select" data-replace-index="${index}">${savedRecipes.map(r=>`<option value="${r.id}" ${String(r.id)===String(recipe.id)?"selected":""}>${prepTagLabel(r)} · ${escapeHtml(r.name)}</option>`).join("")}</select></div>`:"";
+    const discoveryActions=isNew&&!locked?`<div class="meal-actions"><button class="btn btn-soft" style="flex:1" data-change-discovery="1">↻ Chercher une autre recette</button><button class="btn btn-primary" style="flex:1" data-validate="${recipe.id}">✓ Valider et ajouter</button></div>`:"";
+    return `<article class="meal-card ${isNew?"new":""} ${locked?"locked-card":""}">
+      <div class="meal-main"><div class="emoji">${recipe.emoji}</div><div>
+        <span class="badge ${isNew?"badge-new web-badge":""}">${isNew?(recipe.sourceSite?"🇫🇷 Découverte · "+recipe.sourceSite:"🌐 Découverte web"):"📚 Ma bibliothèque"}</span>
+        ${!isNew?`<span class="prep-badge">${prepTagLabel(recipe)}</span>`:""}
+        <h4>Repas ${index+1} · ${escapeHtml(recipe.name)}</h4><p>⏱️ ${recipe.time} min</p>
+      </div></div>
+      ${isNew&&pantryMatches.length?`<div class="shared">🏠 Déjà chez toi : ${pantryMatches.slice(0,6).join(", ")}</div>`:""}
+      <div class="shared">${shared.length?"♻️ Mutualisés : "+shared.slice(0,5).join(", "):"Peu d'ingrédients partagés avec les autres repas"}</div>
+      ${recipeActionLink(recipe)}${librarySelector}${discoveryActions}
+      <div class="meal-actions"><button class="mini-btn" data-leftovers-recipe="${recipe.id}">♻️ J’ai des restes</button></div>
+    </article>`;
   }).join("");
 
-  el.querySelectorAll("[data-replace-index]").forEach(select=>{
-    select.addEventListener("change",()=>{
-      replaceKnownMeal(Number(select.dataset.replaceIndex),select.value);
-    });
-  });
+  el.querySelectorAll("[data-replace-index]").forEach(select=>select.addEventListener("change",()=>replaceKnownMeal(Number(select.dataset.replaceIndex),select.value)));
+  el.querySelectorAll("[data-validate]").forEach(btn=>btn.addEventListener("click",()=>validateDiscovery(btn.dataset.validate)));
+  el.querySelectorAll("[data-change-discovery]").forEach(btn=>btn.addEventListener("click",changeDiscovery));
+  el.querySelectorAll("[data-leftovers-recipe]").forEach(btn=>btn.addEventListener("click",()=>addRecipeToLeftovers(btn.dataset.leftoversRecipe)));
+  el.querySelectorAll("[data-view-recipe]").forEach(btn=>btn.addEventListener("click",()=>openRecipeDetail(btn.dataset.viewRecipe)));
+}
 
-  el.querySelectorAll("[data-validate]").forEach(btn=>{
-    btn.addEventListener("click",()=>validateDiscovery(btn.dataset.validate));
-  });
+function renderSweetMeals(){
+  const el=document.getElementById("sweetMealList");
+  const count=document.getElementById("sweetPlannedCount");
+  if(!el) return;
+  const sweets=currentSweetRecipes();
+  if(count) count.textContent=String(sweets.length);
+  if(!state.sweetCount){el.innerHTML='<div class="empty" style="grid-column:1/-1;padding:16px">Choisis de 1 à 3 recettes sucrées dans le sélecteur « Sucrés » si tu veux en planifier.</div>';return;}
+  if(!sweets.length){el.innerHTML='<div class="empty" style="grid-column:1/-1;padding:16px">Aucune recette sucrée compatible disponible.</div>';return;}
+  el.innerHTML=sweets.map((recipe,index)=>`<article class="sweet-card"><span class="badge">🍰 Sucré ${index+1}</span><h4>${escapeHtml(recipe.name)}</h4><p>🏠 ${pantryMatchCount(recipe)} ingrédient${pantryMatchCount(recipe)>1?"s":""} déjà disponible${pantryMatchCount(recipe)>1?"s":""}</p>${recipeActionLink(recipe)}</article>`).join("");
+  el.querySelectorAll("[data-view-recipe]").forEach(btn=>btn.addEventListener("click",()=>openRecipeDetail(btn.dataset.viewRecipe)));
+}
 
-  el.querySelectorAll("[data-change-discovery]").forEach(btn=>{
-    btn.addEventListener("click",changeDiscovery);
-  });
-
-  el.querySelectorAll("[data-leftovers-recipe]").forEach(btn=>{
-    btn.addEventListener("click",()=>addRecipeToLeftovers(btn.dataset.leftoversRecipe));
-  });
+function closeRecipeDetail(){
+  const modal=document.getElementById("recipeDetailModal"); if(!modal)return; modal.classList.remove("open"); modal.setAttribute("aria-hidden","true");
+}
+function openRecipeDetail(id){
+  const recipe=recipeById(id)||currentAllPlanRecipes().find(r=>String(r.id)===String(id)); if(!recipe)return;
+  document.getElementById("recipeDetailTitle").textContent=recipe.name||"Recette";
+  document.getElementById("recipeDetailMeta").textContent=`${prepTagLabel(recipe)} · ⏱️ ${Number(recipe.time)||30} min`;
+  document.getElementById("recipeDetailIngredients").innerHTML=(recipe.ingredients||[]).map(i=>`<li>${escapeHtml(i[0])}</li>`).join("")||"<li>Non renseigné</li>";
+  document.getElementById("recipeDetailSteps").innerHTML=recipeSteps(recipe).map(step=>`<li>${escapeHtml(step)}</li>`).join("")||"<li>Étapes non renseignées.</li>";
+  const source=document.getElementById("recipeDetailSource");
+  if(recipe.sourceUrl){source.href=recipe.sourceUrl;source.style.display="inline-flex";}else{source.removeAttribute("href");source.style.display="none";}
+  const modal=document.getElementById("recipeDetailModal"); modal.classList.add("open"); modal.setAttribute("aria-hidden","false");
 }
 
 
@@ -2117,31 +2256,17 @@ async function confirmLeftoversSelection(){
 
 function replaceKnownMeal(index,newId){
   if(isPlanLocked()) return;
-  const newRecipe=recipeById(newId);
-  if(!newRecipe) return;
-
-  const discoveryEnabled=state.shared.preferences.discovery !== false;
-  const last=isLastMealSlot(index);
-
-  if(discoveryEnabled && last){
-    alert("Le dernier repas est réservé à la recette découverte.");
-    renderAll();
-    return;
-  }
-
-  const mustBeElaborate=!discoveryEnabled && last;
-  if(isElaborateRecipe(newRecipe)!==mustBeElaborate){
-    alert(mustBeElaborate
-      ? "Le dernier repas doit être une recette élaborée."
-      : "Ce repas doit être une recette simple.");
-    renderAll();
-    return;
-  }
-
+  const newRecipe=recipeById(newId); if(!newRecipe) return;
   state.generatedMealIds[index]=newId;
-  save();
-  renderAll();
+  if(state.discoveryId && index===state.generatedMealIds.findIndex(id=>String(id)===String(state.discoveryId))){state.discoveryId=null;setActiveDiscovery(null);}
+  save(); renderAll();
+
+  if(state.shared.preferences.ovenPlanning){
+    const ovenCount=currentPlanRecipes().filter(r=>recipePrepTag(r)==="oven").length;
+    if(ovenCount<2) alert("⚠️ L’option Four est activée mais la planification contient maintenant moins de 2 recettes Four.");
+  }
 }
+
 async function changeDiscovery(){
   if(isPlanLocked()) return;
   const discoveryIndex = state.generatedMealIds.findIndex(id => id === state.discoveryId);
@@ -2195,6 +2320,8 @@ async function validateDiscovery(id){
     const cloudRecipe = await insertRecipeInCloud(recipe);
 
     state.generatedMealIds = state.generatedMealIds.map(mealId => mealId === id ? cloudRecipe.id : mealId);
+    state.shared.feedback[String(cloudRecipe.id)]={...feedbackFor(cloudRecipe),prepTag:"easy",steps:recipeSteps(recipe)};
+    await saveSharedAppState();
     state.discoveryId = null;
     setActiveDiscovery(null);
 
@@ -2292,43 +2419,66 @@ function renderReuse(){
   else detail.textContent="Cette génération partage peu d'ingrédients.";
 }
 
+function libraryCardHtml(recipe){
+  const fb=feedbackFor(recipe); const rating=Number(fb.rating)||0;
+  return `<article class="recipe-card-mini ${fb.blocked?"blocked":""}" draggable="true" data-recipe-card="${recipe.id}">
+    <h4>${escapeHtml(recipe.name)}</h4>
+    <div class="ingredient-mini">${recipe.ingredients.map(i=>escapeHtml(i[0])).slice(0,5).join(" · ")}</div>
+    <div class="rating-row" aria-label="Note">${[1,2,3,4,5].map(n=>`<button class="star-btn ${n<=rating?"active":""}" data-rate="${recipe.id}" data-rating="${n}" title="${n}/5">⭐</button>`).join("")}</div>
+    <div class="library-tools">
+      <button class="mini-btn" data-view-recipe="${recipe.id}">📋 Voir</button>
+      <button class="mini-btn ${fb.favorite?"active":""}" data-favorite="${recipe.id}">${fb.favorite?"❤️":"♡"}</button>
+      <button class="mini-btn" data-edit="${recipe.id}">✏️</button>
+      <button class="mini-btn ${fb.blocked?"active":""}" data-block="${recipe.id}">${fb.blocked?"↩":"👎"}</button>
+      <button class="mini-btn danger" data-delete="${recipe.id}">🗑</button>
+    </div>
+  </article>`;
+}
+
 function renderLibrary(){
   const grid=document.getElementById("libraryGrid");
   const saved=cloudRecipes.slice().sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
   document.getElementById("libraryCount").textContent=saved.length;
+  if(!currentUser){grid.innerHTML=`<div class="empty" style="grid-column:1/-1">Connecte-toi pour afficher la bibliothèque partagée.</div>`;return;}
 
-  if(!currentUser){
-    grid.innerHTML=`<div class="empty" style="grid-column:1/-1">Connecte-toi pour afficher la bibliothèque partagée.</div>`;
-    return;
-  }
-
-  grid.innerHTML=saved.map(recipe=>{
-    const fb=feedbackFor(recipe);
-    const rating=Number(fb.rating)||0;
-    return `
-    <article class="library-card ${fb.blocked?"blocked":""}">
-      <div class="visual">${recipe.emoji}</div>
-      <h4>${recipe.name}</h4>
-      <div class="ingredient-mini">${recipe.ingredients.map(i=>i[0]).slice(0,6).join(" · ")}</div>
-      <label class="recipe-complexity">
-        <input type="checkbox" data-elaborated="${recipe.id}" ${isElaborateRecipe(recipe)?"checked":""}>
-        <span>Élaboré</span>
-      </label>
-      <span class="complexity-badge ${isElaborateRecipe(recipe)?"elaborate":""}">${isElaborateRecipe(recipe)?"🍳 Élaboré":"⚡ Simple"}</span>
-      <div class="rating-row" aria-label="Note">
-        ${[1,2,3,4,5].map(n=>`<button class="star-btn ${n<=rating?"active":""}" data-rate="${recipe.id}" data-rating="${n}" title="${n}/5">⭐</button>`).join("")}
-      </div>
-      <div class="library-tools">
-        <button class="mini-btn ${fb.favorite?"active":""}" data-favorite="${recipe.id}">${fb.favorite?"❤️ Favori":"♡ Favori"}</button>
-        <button class="mini-btn ${fb.blocked?"active":""}" data-block="${recipe.id}">${fb.blocked?"↩ Réautoriser":"👎 Ne plus proposer"}</button>
-        <button class="mini-btn" data-edit="${recipe.id}">✏️ Modifier</button>
-        <button class="mini-btn danger" data-delete="${recipe.id}">🗑 Supprimer</button>
-      </div>
-      <a class="recipe-link" href="${recipeSourceUrl(recipe)}" target="_blank" rel="noopener noreferrer">${recipe.sourceUrl ? "Voir la recette source ↗" : "Voir la recette sur Marmiton ↗"}</a>
-    </article>`;
+  grid.innerHTML=PREP_TAGS.map(tag=>{
+    const list=saved.filter(recipe=>recipePrepTag(recipe)===tag.key);
+    return `<section class="recipe-column" data-drop-tag="${tag.key}"><div class="recipe-column-head"><span>${tag.label}</span><span class="recipe-column-count">${list.length}</span></div><div class="recipe-column-body">${list.map(libraryCardHtml).join("")||'<div class="muted" style="font-size:11px;padding:8px">Dépose une recette ici</div>'}</div></section>`;
   }).join("");
 
-  grid.querySelectorAll("[data-elaborated]").forEach(box=>box.addEventListener("change",()=>setRecipeElaborated(box.dataset.elaborated,box.checked)));
+  let draggedId="";
+  grid.querySelectorAll("[data-recipe-card]").forEach(card=>{
+    card.addEventListener("dragstart",e=>{draggedId=card.dataset.recipeCard;card.classList.add("dragging");e.dataTransfer.setData("text/plain",draggedId);e.dataTransfer.effectAllowed="move";});
+    card.addEventListener("dragend",()=>{card.classList.remove("dragging");grid.querySelectorAll(".recipe-column").forEach(c=>c.classList.remove("drag-over"));});
+
+    // Support mobile : appui long puis glisser.
+    let timer=null,active=false,startX=0,startY=0,targetColumn=null;
+    card.addEventListener("pointerdown",e=>{
+      if(e.pointerType==="mouse"||e.target.closest("button,a,input,select")) return;
+      startX=e.clientX;startY=e.clientY;
+      timer=setTimeout(()=>{active=true;card.classList.add("dragging");card.setPointerCapture?.(e.pointerId);},320);
+    });
+    card.addEventListener("pointermove",e=>{
+      if(!active){if(Math.hypot(e.clientX-startX,e.clientY-startY)>10&&timer){clearTimeout(timer);timer=null;}return;}
+      e.preventDefault();
+      grid.querySelectorAll(".recipe-column").forEach(c=>c.classList.remove("drag-over"));
+      targetColumn=document.elementFromPoint(e.clientX,e.clientY)?.closest(".recipe-column")||null;
+      if(targetColumn) targetColumn.classList.add("drag-over");
+    });
+    const finishTouch=async e=>{
+      if(timer){clearTimeout(timer);timer=null;}
+      if(active){active=false;card.classList.remove("dragging");if(targetColumn){const tag=targetColumn.dataset.dropTag;targetColumn.classList.remove("drag-over");await setRecipePrepTag(card.dataset.recipeCard,tag);}targetColumn=null;}
+    };
+    card.addEventListener("pointerup",finishTouch); card.addEventListener("pointercancel",finishTouch);
+  });
+
+  grid.querySelectorAll("[data-drop-tag]").forEach(column=>{
+    column.addEventListener("dragover",e=>{e.preventDefault();column.classList.add("drag-over");});
+    column.addEventListener("dragleave",()=>column.classList.remove("drag-over"));
+    column.addEventListener("drop",async e=>{e.preventDefault();column.classList.remove("drag-over");const id=e.dataTransfer.getData("text/plain")||draggedId;if(id) await setRecipePrepTag(id,column.dataset.dropTag);});
+  });
+
+  grid.querySelectorAll("[data-view-recipe]").forEach(btn=>btn.addEventListener("click",()=>openRecipeDetail(btn.dataset.viewRecipe)));
   grid.querySelectorAll("[data-rate]").forEach(btn=>btn.addEventListener("click",()=>rateRecipe(btn.dataset.rate,Number(btn.dataset.rating))));
   grid.querySelectorAll("[data-favorite]").forEach(btn=>btn.addEventListener("click",()=>toggleFavorite(btn.dataset.favorite)));
   grid.querySelectorAll("[data-block]").forEach(btn=>btn.addEventListener("click",()=>toggleBlocked(btn.dataset.block)));
@@ -2336,11 +2486,11 @@ function renderLibrary(){
   grid.querySelectorAll("[data-delete]").forEach(btn=>btn.addEventListener("click",()=>deleteCloudRecipe(btn.dataset.delete)));
 }
 
-async function setRecipeElaborated(id,elaborated){
+async function setRecipePrepTag(id,tag){
+  const normalized=PREP_TAG_KEYS.has(tag)?tag:"easy";
   const fb=feedbackFor({id});
-  state.shared.feedback[id]={...fb,elaborated:!!elaborated};
-  await saveSharedAppState();
-  renderAll();
+  state.shared.feedback[id]={...fb,prepTag:normalized};
+  await saveSharedAppState(); renderAll();
 }
 
 async function rateRecipe(id,rating){
@@ -2364,27 +2514,19 @@ async function toggleBlocked(id){
 }
 
 async function editCloudRecipe(id){
-  const recipe=cloudRecipes.find(r=>String(r.id)===String(id));
-  if(!recipe) return;
-  const name=prompt("Nom de la recette",recipe.name);
-  if(name===null || !name.trim()) return;
-  const url=prompt("Lien de la recette",recipe.sourceUrl||"");
-  if(url===null) return;
-  const timeRaw=prompt("Temps en minutes",String(recipe.time||30));
-  if(timeRaw===null) return;
+  const recipe=cloudRecipes.find(r=>String(r.id)===String(id)); if(!recipe)return;
+  const name=prompt("Nom de la recette",recipe.name); if(name===null||!name.trim())return;
+  const url=prompt("Lien de la recette (laisser vide si recette manuelle)",recipe.sourceUrl||""); if(url===null)return;
+  const timeRaw=prompt("Temps en minutes",String(recipe.time||30)); if(timeRaw===null)return;
   const originalIngredients=recipe.ingredients.map(i=>i[0]).join(", ");
-  const ingredientText=prompt("Ingrédients principaux, séparés par des virgules",originalIngredients);
-  if(ingredientText===null) return;
+  const ingredientText=prompt("Ingrédients, séparés par des virgules",originalIngredients); if(ingredientText===null)return;
+  const stepsText=prompt("Étapes de fabrication, une étape par ligne",recipeSteps(recipe).join("\n")); if(stepsText===null)return;
   const ingredientNames=ingredientText.split(",").map(x=>x.trim()).filter(Boolean);
-  const ingredients=ingredientText.trim()===originalIngredients.trim()
-    ? recipe.ingredients
-    : ingredientNames.map(x=>[x,1,"portion","Autres"]);
-
-  const {error}=await supabaseClient.from("recipes").update({
-    name:name.trim(),url:safeUrl(url.trim())||url.trim(),time_minutes:Math.max(1,Number(timeRaw)||30),ingredients
-  }).eq("id",id);
+  const ingredients=ingredientText.trim()===originalIngredients.trim()?recipe.ingredients:ingredientNames.map(x=>[x,1,"portion","Autres"]);
+  const {error}=await supabaseClient.from("recipes").update({name:name.trim(),url:url.trim()?safeUrl(url.trim())||url.trim():"",time_minutes:Math.max(1,Number(timeRaw)||30),ingredients}).eq("id",id);
   if(error){alert("Modification impossible : "+error.message);return;}
-  await loadCloudRecipes({seedIfEmpty:false});
+  state.shared.feedback[id]={...feedbackFor(recipe),steps:parseStepsText(stepsText)};
+  await saveSharedAppState(); await loadCloudRecipes({seedIfEmpty:false});
 }
 
 async function deleteCloudRecipe(id){
@@ -2394,6 +2536,7 @@ async function deleteCloudRecipe(id){
   if(error){alert("Suppression impossible : "+error.message);return;}
   delete state.shared.feedback[id];
   state.generatedMealIds=state.generatedMealIds.filter(x=>String(x)!==String(id));
+  state.generatedSweetIds=state.generatedSweetIds.filter(x=>String(x)!==String(id));
   await saveSharedAppState();
   await loadCloudRecipes({seedIfEmpty:false});
 }
@@ -2414,24 +2557,10 @@ function parseIngredientList(text){
 
 function renderSettings(){
   const pantry=document.getElementById("pantryInput");
-  if(pantry && document.activeElement!==pantry) pantry.value=state.shared.pantry.join(", ");
+  if(pantry&&document.activeElement!==pantry) pantry.value=state.shared.pantry.join(", ");
   const p=state.shared.preferences;
-  const map={prefVegetarian:"vegetarian",prefNoPork:"noPork",prefNoFish:"noFish",prefQuick:"quick",prefKids:"kids",prefDiscovery:"discovery"};
+  const map={prefVegetarian:"vegetarian",prefNoPork:"noPork",prefNoFish:"noFish",prefQuick:"quick",prefKids:"kids",prefDiscovery:"discovery",prefOven:"ovenPlanning",prefComplex:"complexPlanning",prefCompanion:"companionPlanning"};
   Object.entries(map).forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.checked=!!p[key];});
-
-  const total=state.shared.pantry.length;
-  const status=document.getElementById("pantryStatus");
-  if(status){
-    status.textContent=total ? `${total} ingrédient${total>1?"s":""} enregistré${total>1?"s":""}` : "";
-  }
-
-  const list=document.getElementById("availableItemsList");
-  if(list){
-    list.innerHTML=state.shared.pantry.map(name=>`<span class="available-chip"><span>${escapeHtml(name)}</span><button type="button" data-remove-available="pantry" data-name="${escapeHtml(name)}" aria-label="Retirer ${escapeHtml(name)}">×</button></span>`).join("") || `<span class="muted" style="font-size:11px">Aucun ingrédient enregistré.</span>`;
-    list.querySelectorAll("[data-remove-available]").forEach(btn=>{
-      btn.addEventListener("click",()=>removeAvailableItem(btn.dataset.removeAvailable,btn.dataset.name));
-    });
-  }
 }
 
 async function savePantry(){
@@ -2454,6 +2583,7 @@ async function updatePreference(key,value){
   state.shared.preferences[key]=value;
   if(!isPlanLocked()){
     state.generatedMealIds=[];
+    state.generatedSweetIds=[];
     state.discoveryId=null;
     setActiveDiscovery(null);
   }
@@ -2464,12 +2594,15 @@ async function updatePreference(key,value){
 function renderAll(){
   peopleEl.value=state.people;
   mealCountEl.value=state.mealCount;
+  if(sweetCountEl) sweetCountEl.value=state.sweetCount;
   renderMeals();
+  renderSweetMeals();
   renderShopping();
   renderReuse();
   renderLibrary();
   renderSettings();
   renderWeekPlanning();
+  renderPreparationSummary();
   renderWeekHistory();
 }
 
@@ -2482,18 +2615,27 @@ mealCountEl.addEventListener("change",e=>{
   if(isPlanLocked()){renderAll();return;}
   state.mealCount=Number(e.target.value);
   state.generatedMealIds=[];
+  state.generatedSweetIds=[];
   state.discoveryId=null;
   setActiveDiscovery(null);
   save();
   renderAll();
 });
+if(sweetCountEl) sweetCountEl.addEventListener("change",e=>{
+  if(isPlanLocked()){renderAll();return;}
+  state.sweetCount=Math.max(0,Math.min(3,Number(e.target.value)||0));
+  state.generatedSweetIds=[];
+  save(); renderAll();
+});
 document.getElementById("cancelLeftoversBtn").addEventListener("click",closeLeftoversModal);
 document.getElementById("confirmLeftoversBtn").addEventListener("click",confirmLeftoversSelection);
+document.getElementById("closeRecipeDetailBtn").addEventListener("click",closeRecipeDetail);
+document.getElementById("recipeDetailModal").addEventListener("click",e=>{if(e.target===document.getElementById("recipeDetailModal")) closeRecipeDetail();});
 document.getElementById("leftoversModal").addEventListener("click",e=>{
   if(e.target===document.getElementById("leftoversModal")) closeLeftoversModal();
 });
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape" && document.getElementById("leftoversModal").classList.contains("open")) closeLeftoversModal();
+  if(e.key==="Escape"){if(document.getElementById("leftoversModal").classList.contains("open")) closeLeftoversModal();if(document.getElementById("recipeDetailModal").classList.contains("open")) closeRecipeDetail();}
 });
 document.getElementById("lockWeekBtn").addEventListener("click",lockCurrentWeek);
 document.getElementById("unlockWeekBtn").addEventListener("click",unlockCurrentWeek);
@@ -2502,9 +2644,10 @@ document.getElementById("generateBtn").addEventListener("click",generateMeals);
 document.getElementById("addManualRecipeBtn").addEventListener("click",addManualRecipe);
 document.getElementById("analyzeRecipeUrlBtn").addEventListener("click",analyzeRecipeUrl);
 document.getElementById("savePantryBtn").addEventListener("click",savePantry);
+document.getElementById("manualPrepMode").addEventListener("change",renderManualPrepHint);
 document.getElementById("clearShoppingChecksBtn").addEventListener("click",clearShoppingChecks);
 document.getElementById("shareKeepBtn").addEventListener("click",shareShoppingToKeep);
-[["prefVegetarian","vegetarian"],["prefNoPork","noPork"],["prefNoFish","noFish"],["prefQuick","quick"],["prefKids","kids"],["prefDiscovery","discovery"]].forEach(([id,key])=>{
+[["prefVegetarian","vegetarian"],["prefNoPork","noPork"],["prefNoFish","noFish"],["prefQuick","quick"],["prefKids","kids"],["prefOven","ovenPlanning"],["prefComplex","complexPlanning"],["prefCompanion","companionPlanning"],["prefDiscovery","discovery"]].forEach(([id,key])=>{
   document.getElementById(id).addEventListener("change",e=>updatePreference(key,e.target.checked));
 });
 document.getElementById("signInBtn").addEventListener("click",signIn);
@@ -2525,6 +2668,7 @@ supabaseClient.auth.onAuthStateChange((event,session)=>{
 });
 
 document.body.classList.add("signed-out");
+renderManualPrepHint();
 renderAll();
 
 supabaseClient.auth.getSession().then(({data})=>{
